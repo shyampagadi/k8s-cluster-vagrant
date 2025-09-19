@@ -1,0 +1,66 @@
+# Performance Optimization - Example Variables
+
+# Project Configuration
+project_name = "my-performance-project"
+environment = "dev"
+aws_region = "us-west-2"
+
+# VPC Configuration
+vpc_cidr = "10.0.0.0/16"
+
+# Security Configuration
+ssh_cidr_blocks = ["0.0.0.0/0"]
+web_ports = [80, 443]
+
+# Instance Configuration
+app_name = "web-app"
+
+# Database Configuration
+create_database = false
+database_engine = "mysql"
+database_version = "8.0"
+database_instance_class = "db.t3.micro"
+database_allocated_storage = 20
+database_name = "webapp"
+database_username = "admin"
+database_password = "TempPassword123!"
+database_port = 3306
+backup_retention_period = 7
+backup_window = "03:00-04:00"
+maintenance_window = "sun:04:00-sun:05:00"
+enable_multi_az = false
+
+# Performance Configuration
+enable_performance_optimization = true
+enable_parallel_execution = true
+enable_caching = true
+enable_auto_scaling = false
+enable_monitoring = true
+enable_load_balancing = true
+
+# Monitoring Configuration
+log_retention_days = 7
+
+# Performance Thresholds
+cpu_threshold = 80
+memory_threshold = 80
+disk_threshold = 85
+
+# Scaling Configuration
+min_instance_count = 1
+max_instance_count = 10
+desired_instance_count = 2
+
+# Performance Optimization Features
+enable_performance_insights = true
+enable_enhanced_monitoring = true
+enable_detailed_monitoring = false
+enable_cloudwatch_logs = true
+
+# Additional Tags
+additional_tags = {
+  Owner = "DevOps Team"
+  CostCenter = "Engineering"
+  Project = "Infrastructure"
+  PerformanceOptimized = "true"
+}

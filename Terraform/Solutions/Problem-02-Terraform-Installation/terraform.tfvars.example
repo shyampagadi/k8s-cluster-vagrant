@@ -1,0 +1,18 @@
+# AWS Configuration
+aws_region = "us-west-2"
+
+# S3 Bucket Configuration
+bucket_name_prefix = "my-terraform-bucket"
+
+# Environment Configuration
+environment = "development"
+
+# Project Configuration
+project_name = "terraform-learning"
+
+# Additional Tags (optional)
+additional_tags = {
+  Owner       = "DevOps Team"
+  CostCenter  = "Engineering"
+  Backup      = "Daily"
+}

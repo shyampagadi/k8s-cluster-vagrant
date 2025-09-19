@@ -1,0 +1,63 @@
+# Error Handling and Validation - Example Variables
+
+# Project Configuration
+project_name = "my-error-handling-project"
+environment = "dev"
+aws_region = "us-west-2"
+
+# Random Configuration
+random_byte_length = 4
+
+# VPC Configuration
+vpc_cidr = "10.0.0.0/16"
+enable_dns_hostnames = true
+enable_dns_support = true
+subnet_count = 2
+
+# Security Configuration
+ssh_cidr_blocks = ["0.0.0.0/0"]
+
+# Instance Configuration
+app_name = "web-app"
+
+# Database Configuration
+create_database = false
+database_engine = "mysql"
+database_version = "8.0"
+database_instance_class = "db.t3.micro"
+database_allocated_storage = 20
+database_name = "webapp"
+database_username = "admin"
+database_password = "TempPassword123!"
+database_port = 3306
+backup_window = "03:00-04:00"
+maintenance_window = "sun:04:00-sun:05:00"
+enable_multi_az = false
+
+# S3 Configuration
+enable_versioning = true
+block_public_access = true
+
+# Monitoring Configuration
+log_retention_days = 7
+
+# Error Handling Configuration
+enable_error_handling = true
+enable_validation = true
+enable_monitoring = true
+error_threshold_cpu = 80
+error_threshold_disk = 85
+error_threshold_memory = 80
+
+# Recovery Configuration
+enable_auto_recovery = false
+backup_retention_days = 7
+enable_rollback = true
+
+# Additional Tags
+additional_tags = {
+  Owner = "DevOps Team"
+  CostCenter = "Engineering"
+  Project = "Infrastructure"
+  ErrorHandling = "Enabled"
+}

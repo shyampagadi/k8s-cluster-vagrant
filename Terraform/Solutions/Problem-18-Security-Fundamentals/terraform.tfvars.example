@@ -1,0 +1,62 @@
+# Security Fundamentals - Example Variables
+
+# Project Configuration
+project_name = "my-security-project"
+environment = "dev"
+aws_region = "us-west-2"
+
+# Security Configuration
+security_level = "high"
+compliance_level = "standard"
+data_classification = "internal"
+
+# VPC Configuration
+vpc_cidr = "10.0.0.0/16"
+subnet_count = 2
+
+# Security Configuration
+ssh_cidr_blocks = ["0.0.0.0/0"]
+
+# Instance Configuration
+instance_count = 2
+instance_type = "t3.micro"
+app_name = "web-app"
+
+# Database Configuration
+create_database = false
+database_engine = "mysql"
+database_version = "8.0"
+database_instance_class = "db.t3.micro"
+database_allocated_storage = 20
+database_name = "webapp"
+database_username = "admin"
+database_port = 3306
+backup_window = "03:00-04:00"
+maintenance_window = "sun:04:00-sun:05:00"
+enable_multi_az = false
+
+# Security Features
+encryption_enabled = true
+backup_required = true
+monitoring_enabled = true
+enable_audit_logging = true
+
+# Monitoring Configuration
+log_retention_days = 7
+
+# Security Scanning Configuration
+enable_security_scanning = true
+security_scanning_schedule = "cron(0 2 * * ? *)"
+
+# Compliance Configuration
+compliance_standards = ["SOC2", "PCI-DSS"]
+data_residency_requirements = ["US"]
+
+# Additional Tags
+additional_tags = {
+  Owner = "DevOps Team"
+  CostCenter = "Engineering"
+  Project = "Infrastructure"
+  SecurityLevel = "High"
+  Compliance = "Standard"
+}

@@ -1,0 +1,102 @@
+# Locals and Functions - Example Variable Values
+
+# String Variables
+project_name = "locals-functions-demo"
+environment = "development"
+app_name = "web-app"
+aws_region = "us-west-2"
+vpc_cidr = "10.0.0.0/16"
+ami_id = ""  # Leave empty to use data source
+
+# Number Variables
+instance_count = 2
+instance_type = "t3.micro"
+instance_hourly_cost = 0.01
+total_cost = 0.02
+cpu_threshold = 80
+storage_gb = 20
+duration_hours = 24
+database_port = 3306
+log_retention_days = 30
+
+# Boolean Variables
+create_database = false
+enable_monitoring = true
+enable_encryption = true
+enable_dns_hostnames = true
+enable_dns_support = true
+enable_versioning = false
+enable_multi_az = false
+block_public_access = true
+
+# List Variables
+availability_zones = ["us-west-2a", "us-west-2b", "us-west-2c"]
+
+# Map Variables for Function Examples
+app_config = {
+  app_name = "web-app"
+  environment = "development"
+  version = "1.0.0"
+  debug = "false"
+}
+
+enabled_features = ["monitoring", "logging", "backup"]
+
+database_config = {
+  host = "localhost"
+  port = "3306"
+  name = "webapp"
+  username = "admin"
+  ssl = "true"
+}
+
+# Complex Map Variables for Function Examples
+server_configs = {
+  web1 = {
+    instance_type = "t3.micro"
+    disk_size_gb  = 20
+    hourly_cost   = 0.01
+    enabled       = true
+  }
+  web2 = {
+    instance_type = "t3.micro"
+    disk_size_gb  = 20
+    hourly_cost   = 0.01
+    enabled       = true
+  }
+  app1 = {
+    instance_type = "t3.small"
+    disk_size_gb  = 50
+    hourly_cost   = 0.02
+    enabled       = true
+  }
+  app2 = {
+    instance_type = "t3.small"
+    disk_size_gb  = 50
+    hourly_cost   = 0.02
+    enabled       = false
+  }
+}
+
+# Database Configuration Variables
+database_engine = "mysql"
+database_version = "8.0"
+database_instance_class = "db.t3.micro"
+database_name = "webapp"
+database_username = "admin"
+database_password = "changeme123"
+database_allocated_storage = 20
+
+# Backup Configuration Variables
+backup_retention_period = 7
+backup_window = "03:00-04:00"
+maintenance_window = "sun:04:00-sun:05:00"
+
+# Additional Configuration
+additional_tags = {
+  Owner       = "DevOps Team"
+  CostCenter  = "Engineering"
+  Backup      = "Daily"
+  Compliance  = "Required"
+  Project     = "Locals Functions Demo"
+}

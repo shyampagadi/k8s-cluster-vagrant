@@ -1,0 +1,66 @@
+# Resource Lifecycle and State Management - Example Variable Values
+
+# Project Configuration
+project_name = "resource-lifecycle-demo"
+environment = "development"
+app_name = "web-app"
+
+# AWS Configuration
+aws_region = "us-west-2"
+vpc_cidr = "10.0.0.0/16"
+availability_zones = ["us-west-2a", "us-west-2b", "us-west-2c"]
+
+# EC2 Configuration
+instance_count = 2
+instance_type = "t3.micro"
+
+# Security Configuration
+ingress_ports = [
+  {
+    port        = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  },
+  {
+    port        = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  },
+  {
+    port        = 22
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/8"]
+  }
+]
+
+# Database Configuration
+create_database = false
+database_config = {
+  engine    = "mysql"
+  engine_version = "8.0"
+  instance_class = "db.t3.micro"
+  allocated_storage = 20
+  backup_retention_period = 7
+  db_name   = "webapp"
+  username  = "admin"
+}
+
+# Monitoring Configuration
+enable_monitoring = true
+monitoring_config = {
+  retention_days = 30
+  alert_threshold = 80.0
+}
+
+# Lifecycle Configuration
+prevent_destroy = false
+create_example_resource = true
+
+# Additional Configuration
+additional_tags = {
+  Owner       = "DevOps Team"
+  CostCenter  = "Engineering"
+  Backup      = "Daily"
+  Compliance  = "Required"
+  Project     = "Resource Lifecycle Demo"
+}

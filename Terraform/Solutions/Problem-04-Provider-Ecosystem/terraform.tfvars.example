@@ -1,0 +1,106 @@
+# Provider Ecosystem Understanding - Example Variable Values
+
+# Project Configuration
+project_name = "provider-ecosystem-demo"
+environment = "development"
+
+# AWS Configuration
+aws_region = "us-west-2"
+aws_vpc_cidr = "10.0.0.0/16"
+aws_availability_zones = ["us-west-2a", "us-west-2b", "us-west-2c"]
+aws_instance_count = 2
+aws_instance_type = "t3.micro"
+
+# AWS Authentication (uncomment and configure as needed)
+# aws_assume_role_arn = "arn:aws:iam::123456789012:role/TerraformRole"
+
+# AWS Endpoints (uncomment and configure as needed)
+# aws_endpoints = {
+#   s3  = "https://s3.us-west-2.amazonaws.com"
+#   ec2 = "https://ec2.us-west-2.amazonaws.com"
+# }
+
+# AWS Provider Aliases
+production_region = "us-east-1"
+development_region = "us-west-2"
+# production_assume_role_arn = "arn:aws:iam::123456789012:role/ProductionTerraformRole"
+# development_assume_role_arn = "arn:aws:iam::123456789012:role/DevelopmentTerraformRole"
+
+# Azure Configuration
+azure_location = "West US 2"
+azure_vnet_cidr = "10.1.0.0/16"
+azure_subnet_cidrs = ["10.1.1.0/24", "10.1.2.0/24", "10.1.3.0/24"]
+
+# Azure Authentication (uncomment and configure as needed)
+# azure_subscription_id = "your-azure-subscription-id"
+# azure_client_id = "your-azure-client-id"
+# azure_client_secret = "your-azure-client-secret"
+# azure_tenant_id = "your-azure-tenant-id"
+
+# Azure Provider Aliases
+# azure_production_subscription_id = "your-production-subscription-id"
+# azure_production_client_id = "your-production-client-id"
+# azure_production_client_secret = "your-production-client-secret"
+# azure_production_tenant_id = "your-production-tenant-id"
+
+# azure_development_subscription_id = "your-development-subscription-id"
+# azure_development_client_id = "your-development-client-id"
+# azure_development_client_secret = "your-development-client-secret"
+# azure_development_tenant_id = "your-development-tenant-id"
+
+# Google Cloud Configuration
+gcp_region = "us-central1"
+gcp_zone = "us-central1-a"
+gcp_subnet_cidrs = ["10.2.1.0/24", "10.2.2.0/24", "10.2.3.0/24"]
+
+# Google Cloud Authentication (uncomment and configure as needed)
+# gcp_project_id = "your-gcp-project-id"
+# gcp_service_account_key_path = "path/to/service-account-key.json"
+
+# Google Cloud Provider Aliases
+# gcp_production_project_id = "your-production-project-id"
+# gcp_production_region = "us-east1"
+# gcp_production_zone = "us-east1-a"
+
+# gcp_development_project_id = "your-development-project-id"
+# gcp_development_region = "us-central1"
+# gcp_development_zone = "us-central1-a"
+
+# Datadog Configuration
+enable_datadog_monitoring = false
+# datadog_api_key = "your-datadog-api-key"
+# datadog_app_key = "your-datadog-app-key"
+# datadog_api_url = "https://api.datadoghq.com/"
+
+# GitHub Configuration
+create_github_repo = false
+github_repo_visibility = "private"
+# github_token = "your-github-token"
+# github_base_url = "https://api.github.com/"
+# github_owner = "your-github-username"
+
+# Kubernetes Configuration
+create_kubernetes_namespace = false
+kubeconfig_path = "~/.kube/config"
+# cluster_endpoint = "https://your-cluster-endpoint"
+# cluster_ca_certificate = "your-cluster-ca-certificate"
+# cluster_token = "your-cluster-token"
+
+# Provider Selection
+enable_aws_provider = true
+enable_azure_provider = true
+enable_gcp_provider = true
+enable_datadog_provider = false
+enable_github_provider = false
+enable_kubernetes_provider = false
+
+# Additional Configuration
+additional_tags = {
+  Owner       = "DevOps Team"
+  CostCenter  = "Engineering"
+  Backup      = "Daily"
+  Compliance  = "Required"
+  Project     = "Provider Ecosystem Demo"
+}
+
+enable_cross_provider_resources = false

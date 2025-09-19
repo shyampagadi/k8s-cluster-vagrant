@@ -1,0 +1,136 @@
+# Variables - Complex Types and Validation - Example Variable Values
+
+# String Variables
+project_name = "complex-variables-demo"
+environment = "development"
+app_name = "web-app"
+aws_region = "us-west-2"
+vpc_cidr = "10.0.0.0/16"
+ami_id = ""  # Leave empty to use data source
+
+# Number Variables
+instance_count = 2
+hourly_rate = 0.0234
+database_port = 3306
+log_retention_days = 30
+
+# Boolean Variables
+create_database = false
+enable_monitoring = true
+enable_encryption = true
+enable_dns_hostnames = true
+enable_dns_support = true
+enable_versioning = false
+block_public_access = true
+
+# List Variables
+availability_zones = ["us-west-2a", "us-west-2b", "us-west-2c"]
+port_numbers = [80, 443, 8080, 8443]
+
+# Set Variables
+unique_tags = ["production", "web", "frontend", "api"]
+unique_ports = [80, 443, 8080, 8443, 9000]
+
+# Map Variables
+environment_tags = {
+  Environment = "development"
+  Project     = "complex-variables-demo"
+  Owner       = "devops-team"
+  CostCenter  = "engineering"
+  Backup      = "daily"
+  Compliance  = "required"
+}
+
+server_configs = {
+  web = {
+    instance_type = "t3.micro"
+    disk_size     = 20
+    monitoring    = true
+    environment   = "production"
+  }
+  db = {
+    instance_type = "t3.small"
+    disk_size     = 100
+    monitoring    = true
+    environment   = "production"
+  }
+  cache = {
+    instance_type = "t3.micro"
+    disk_size     = 10
+    monitoring    = false
+    environment   = "development"
+  }
+  api = {
+    instance_type = "t3.medium"
+    disk_size     = 30
+    monitoring    = true
+    environment   = "production"
+  }
+}
+
+# Tuple Variables
+server_info = ["web-server", 3, true]
+database_info = ["mysql", "8.0", 100, false]
+
+# Object Variables
+database_config = {
+  engine    = "mysql"
+  version   = "8.0"
+  instance_class = "db.t3.micro"
+  allocated_storage = 20
+  backup_retention_period = 7
+  multi_az  = false
+  db_name   = "webapp"
+  username  = "admin"
+}
+
+# Complex List of Objects
+ingress_ports = [
+  {
+    port        = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  },
+  {
+    port        = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  },
+  {
+    port        = 22
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/8"]
+  },
+  {
+    port        = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/8"]
+  }
+]
+
+egress_rules = [
+  {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+]
+
+# Sensitive Variables
+database_password = "changeme123"
+
+# Backup Configuration Variables
+backup_retention_production = 30
+backup_retention_development = 7
+backup_window = "03:00-04:00"
+maintenance_window = "sun:04:00-sun:05:00"
+
+# Additional Configuration
+additional_tags = {
+  Owner       = "DevOps Team"
+  CostCenter  = "Engineering"
+  Backup      = "Daily"
+  Compliance  = "Required"
+  Project     = "Complex Variables Demo"
+}
