@@ -1,0 +1,8 @@
+# Problem 23: State Management - Remote State and Collaboration
+# Example variable values for state management configuration
+
+aws_region    = "us-west-2"
+project_name  = "state-management"
+environment   = "dev"
+vpc_cr        = "10.0.0.0/16"
+instance_type = "t3.micro"

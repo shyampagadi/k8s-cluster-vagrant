@@ -1,0 +1,8 @@
+# Problem 25: Custom Providers - Development and Integration
+# Example variable values for custom providers configuration
+
+aws_region    = "us-west-2"
+project_name  = "custom-providers"
+environment   = "dev"
+vpc_cr        = "10.0.0.0/16"
+instance_type = "t3.micro"

@@ -1,0 +1,37 @@
+# Problem 22: Modules - Advanced Features and Patterns
+# Example variable values for advanced module configuration
+
+aws_region                = "us-west-2"
+project_name              = "advanced-modules"
+environment               = "dev"
+vpc_cidr                  = "10.0.0.0/16"
+enable_nat_gateway        = true
+enable_vpn_gateway        = false
+create_compute_resources  = true
+instance_type             = "t3.micro"
+min_size                  = 1
+max_size                  = 3
+desired_capacity          = 2
+enable_auto_scaling       = true
+enable_monitoring         = false
+
+storage_configurations = {
+  logs = {
+    purpose     = "logs"
+    versioning  = true
+    encryption  = true
+    lifecycle   = true
+  }
+  data = {
+    purpose     = "data"
+    versioning  = false
+    encryption  = true
+    lifecycle   = false
+  }
+  backup = {
+    purpose     = "backup"
+    versioning  = true
+    encryption  = true
+    lifecycle   = true
+  }
+}

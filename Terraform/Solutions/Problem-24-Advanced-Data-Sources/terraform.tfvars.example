@@ -1,0 +1,8 @@
+# Problem 24: Advanced Data Sources - Complex Queries and Filtering
+# Example variable values for advanced data sources configuration
+
+aws_region    = "us-west-2"
+project_name  = "advanced-data-sources"
+environment   = "dev"
+vpc_cr        = "10.0.0.0/16"
+instance_type = "t3.micro"
