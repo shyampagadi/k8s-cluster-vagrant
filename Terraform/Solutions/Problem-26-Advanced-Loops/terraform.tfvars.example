@@ -1,0 +1,19 @@
+# Problem 26: Advanced Loops - Complex Iteration Patterns
+# Example variable values for advanced loops configuration
+
+aws_region = "us-west-2"
+project_name = "advanced-loops"
+environment = "dev"
+enable_all_environments = true
+
+custom_instance_types = {
+  dev     = "t3.micro"
+  staging = "t3.small"
+  prod    = "t3.medium"
+}
+
+custom_instance_counts = {
+  dev     = 2
+  staging = 3
+  prod    = 5
+}

@@ -1,0 +1,10 @@
+# Problem 28: CI/CD Integration - DevOps Automation
+# Example variable values for CI/CD integration configuration
+
+aws_region = "us-west-2"
+project_name = "ci-cd-integration"
+environment = "dev"
+vpc_cr = "10.0.0.0/16"
+instance_type = "t3.medium"
+enable_automated_testing = true
+enable_security_scanning = true

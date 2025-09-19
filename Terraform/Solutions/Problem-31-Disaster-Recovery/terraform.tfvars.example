@@ -1,0 +1,12 @@
+# Problem 31: Disaster Recovery - Multi-Region Backup and Recovery
+# Example variable values for disaster recovery configuration
+
+project_name = "disaster-recovery"
+environment = "prod"
+primary_region = "us-west-2"
+secondary_region = "us-east-1"
+primary_vpc_cr = "10.0.0.0/16"
+secondary_vpc_cr = "10.1.0.0/16"
+instance_type = "t3.medium"
+enable_automated_failover = true
+backup_retention_days = 30
