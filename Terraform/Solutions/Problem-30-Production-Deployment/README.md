@@ -18,7 +18,7 @@ Problem-30-Production-Deployment/
 ├── variables.tf
 ├── outputs.tf
 ├── terraform.tfvars.example
-├── deployment-strategies.md
+├── production-deployment-guide.md
 └── templates/
     ├── user_data.sh
     └── app.conf

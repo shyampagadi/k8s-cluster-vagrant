@@ -30,7 +30,7 @@ resource "random_id" "deployment_id" {
 
 # VPC for production deployment
 resource "aws_vpc" "production" {
-  cidr_block           = var.vpc_cr
+  cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
 
@@ -47,7 +47,7 @@ resource "aws_subnet" "public" {
   count = 2
 
   vpc_id                  = aws_vpc.production.id
-  cidr_block              = cidrsubnet(var.vpc_cr, 8, count.index)
+  cidr_block              = cidrsubnet(var.vpc_cidr, 8, count.index)
   availability_zone       = data.aws_region.current.name
   map_public_ip_on_launch = true
 
@@ -65,7 +65,7 @@ resource "aws_subnet" "private" {
   count = 2
 
   vpc_id            = aws_vpc.production.id
-  cidr_block         = cidrsubnet(var.vpc_cr, 8, count.index + 10)
+  cidr_block         = cidrsubnet(var.vpc_cidr, 8, count.index + 10)
   availability_zone = data.aws_region.current.name
 
   tags = {

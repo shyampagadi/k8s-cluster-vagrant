@@ -4,7 +4,7 @@
 aws_region = "us-west-2"
 project_name = "advanced-security"
 environment = "prod"
-vpc_cr = "10.0.0.0/16"
+vpc_cidr = "10.0.0.0/16"
 instance_type = "t3.medium"
 enable_zero_trust = true
 enable_compliance_monitoring = true

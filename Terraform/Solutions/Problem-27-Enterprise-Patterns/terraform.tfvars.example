@@ -5,8 +5,8 @@ enterprise_name = "enterprise-demo"
 environment = "prod"
 primary_region = "us-west-2"
 secondary_region = "us-east-1"
-primary_vpc_cr = "10.0.0.0/16"
-secondary_vpc_cr = "10.1.0.0/16"
+primary_vpc_cidr = "10.0.0.0/16"
+secondary_vpc_cidr = "10.1.0.0/16"
 
 primary_azs = ["us-west-2a", "us-west-2b", "us-west-2c"]
 secondary_azs = ["us-east-1a", "us-east-1b", "us-east-1c"]

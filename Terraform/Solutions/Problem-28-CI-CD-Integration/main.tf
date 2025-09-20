@@ -30,7 +30,7 @@ resource "random_id" "cicd_id" {
 
 # VPC for CI/CD infrastructure
 resource "aws_vpc" "cicd" {
-  cidr_block           = var.vpc_cr
+  cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
 
@@ -47,7 +47,7 @@ resource "aws_subnet" "cicd_public" {
   count = 2
 
   vpc_id                  = aws_vpc.cicd.id
-  cidr_block              = cidrsubnet(var.vpc_cr, 8, count.index)
+  cidr_block              = cidrsubnet(var.vpc_cidr, 8, count.index)
   availability_zone       = data.aws_region.current.name
   map_public_ip_on_launch = true
 

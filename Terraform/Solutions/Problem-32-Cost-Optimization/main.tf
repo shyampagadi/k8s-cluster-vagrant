@@ -30,7 +30,7 @@ resource "random_id" "cost_id" {
 
 # VPC for cost-optimized infrastructure
 resource "aws_vpc" "cost_optimized" {
-  cidr_block           = var.vpc_cr
+  cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
 
@@ -48,7 +48,7 @@ resource "aws_subnet" "cost_optimized" {
   count = 2
 
   vpc_id                  = aws_vpc.cost_optimized.id
-  cidr_block              = cidrsubnet(var.vpc_cr, 8, count.index)
+  cidr_block              = cidrsubnet(var.vpc_cidr, 8, count.index)
   availability_zone       = data.aws_region.current.name
   map_public_ip_on_launch = true
 

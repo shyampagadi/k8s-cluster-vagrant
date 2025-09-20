@@ -50,7 +50,7 @@ resource "aws_kms_alias" "security" {
 
 # VPC with security-focused configuration
 resource "aws_vpc" "secure" {
-  cidr_block           = var.vpc_cr
+  cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
 
@@ -68,7 +68,7 @@ resource "aws_subnet" "secure_private" {
   count = 3
 
   vpc_id            = aws_vpc.secure.id
-  cidr_block        = cidrsubnet(var.vpc_cr, 8, count.index)
+  cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index)
   availability_zone = data.aws_region.current.name
 
   tags = {

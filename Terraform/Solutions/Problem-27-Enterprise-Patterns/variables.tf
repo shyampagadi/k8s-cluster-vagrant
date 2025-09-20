@@ -25,13 +25,13 @@ variable "secondary_region" {
   default     = "us-east-1"
 }
 
-variable "primary_vpc_cr" {
+variable "primary_vpc_cidr" {
   description = "CIDR block for primary VPC"
   type        = string
   default     = "10.0.0.0/16"
 }
 
-variable "secondary_vpc_cr" {
+variable "secondary_vpc_cidr" {
   description = "CIDR block for secondary VPC"
   type        = string
   default     = "10.1.0.0/16"
