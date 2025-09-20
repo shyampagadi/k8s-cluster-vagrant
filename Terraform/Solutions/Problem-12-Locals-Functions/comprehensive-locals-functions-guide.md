@@ -1,878 +1,603 @@
-# Terraform Locals and Functions - Complete Guide
+# Problem 12: Terraform Locals and Functions Mastery
 
-## Overview
+## Locals Fundamentals
 
-This comprehensive guide covers Terraform local values and built-in functions, including advanced patterns, performance optimization, and enterprise-grade computation strategies.
+### What are Local Values?
+Local values (locals) allow you to assign names to expressions and reuse them throughout your configuration. They help reduce repetition and make configurations more maintainable.
 
-## Local Values Fundamentals
-
-### Basic Local Values
-
+### Basic Locals Syntax
 ```hcl
-# Simple local values
 locals {
-  project_name = "web-application"
-  environment  = var.environment
-  region       = data.aws_region.current.name
+  # Simple value assignment
+  project_name = "my-application"
+  environment  = "production"
   
   # Computed values
   name_prefix = "${local.project_name}-${local.environment}"
   
-  # Common tags
+  # Complex expressions
   common_tags = {
     Project     = local.project_name
     Environment = local.environment
-    Region      = local.region
-    ManagedBy   = "Terraform"
-    CreatedDate = timestamp()
-  }
-}
-
-# Use local values in resources
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
-  
-  tags = merge(local.common_tags, {
-    Name = "${local.name_prefix}-vpc"
-    Type = "networking"
-  })
-}
-```
-
-### Complex Local Computations
-
-```hcl
-variable "environments" {
-  type = map(object({
-    instance_type = string
-    min_size      = number
-    max_size      = number
-  }))
-  
-  default = {
-    dev = {
-      instance_type = "t3.micro"
-      min_size      = 1
-      max_size      = 2
-    }
-    prod = {
-      instance_type = "t3.large"
-      min_size      = 3
-      max_size      = 10
-    }
-  }
-}
-
-locals {
-  # Environment-specific configuration
-  current_env_config = local.environments[var.environment]
-  
-  # Compute subnet CIDRs
-  subnet_cidrs = {
-    for i in range(3) : "subnet-${i}" => "10.0.${i + 1}.0/24"
-  }
-  
-  # Instance configuration with computed values
-  instance_config = {
-    type = local.current_env_config.instance_type
-    count = local.current_env_config.min_size
-    
-    # Compute storage based on instance type
-    storage_size = contains(["t3.large", "t3.xlarge"], local.current_env_config.instance_type) ? 100 : 20
-    
-    # Compute monitoring based on environment
-    monitoring = var.environment == "prod" ? true : false
-  }
-  
-  # Network configuration
-  network_config = {
-    vpc_cidr = "10.0.0.0/16"
-    
-    # Generate subnet configurations
-    subnets = {
-      for az_index, az in data.aws_availability_zones.available.names : 
-      "public-${az}" => {
-        cidr_block        = "10.0.${az_index + 1}.0/24"
-        availability_zone = az
-        public           = true
-      }
-    }
-    
-    # Private subnets
-    private_subnets = {
-      for az_index, az in data.aws_availability_zones.available.names :
-      "private-${az}" => {
-        cidr_block        = "10.0.${az_index + 11}.0/24"
-        availability_zone = az
-        public           = false
-      }
-    }
+    ManagedBy   = "terraform"
+    CreatedAt   = timestamp()
   }
 }
 ```
 
-## Built-in Functions
+## Essential Terraform Functions
 
 ### String Functions
-
 ```hcl
 locals {
   # String manipulation
-  project_upper = upper(var.project_name)
-  project_lower = lower(var.project_name)
-  project_title = title(var.project_name)
+  project_upper = upper(var.project_name)           # "MY-PROJECT"
+  project_lower = lower(var.project_name)           # "my-project"
+  project_title = title(var.project_name)           # "My-Project"
   
   # String formatting
   formatted_name = format("%s-%s-%03d", var.project_name, var.environment, var.instance_number)
   
-  # String operations
-  trimmed_name = trimspace(var.project_name)
-  replaced_name = replace(var.project_name, "_", "-")
+  # String replacement
+  sanitized_name = replace(var.project_name, "_", "-")
   
   # String splitting and joining
   name_parts = split("-", var.project_name)
   joined_name = join("_", local.name_parts)
   
-  # Substring operations
+  # String length and substring
+  name_length = length(var.project_name)
   short_name = substr(var.project_name, 0, 8)
   
-  # String validation
-  is_valid_name = can(regex("^[a-zA-Z][a-zA-Z0-9-]*$", var.project_name))
+  # String trimming
+  trimmed_name = trimspace(var.project_name)
   
-  # Template rendering
-  user_data_script = templatefile("${path.module}/templates/user_data.sh", {
-    project_name = var.project_name
-    environment  = var.environment
-    region      = data.aws_region.current.name
-  })
+  # Regular expressions
+  valid_name = can(regex("^[a-zA-Z][a-zA-Z0-9-]*$", var.project_name))
 }
 
-# Example template file: templates/user_data.sh
-# #!/bin/bash
-# echo "Project: ${project_name}" > /etc/project-info
-# echo "Environment: ${environment}" >> /etc/project-info
-# echo "Region: ${region}" >> /etc/project-info
+# Use in resources
+resource "aws_s3_bucket" "main" {
+  bucket = local.sanitized_name
+  
+  tags = merge(local.common_tags, {
+    Name = local.formatted_name
+  })
+}
 ```
 
 ### Numeric Functions
-
 ```hcl
-variable "instance_counts" {
-  type = list(number)
-  default = [2, 4, 6, 8]
-}
-
-variable "costs" {
-  type = list(number)
-  default = [10.50, 25.75, 40.25, 15.00]
-}
-
 locals {
-  # Mathematical operations
-  total_instances = sum(var.instance_counts)
-  max_instances = max(var.instance_counts...)
-  min_instances = min(var.instance_counts...)
+  # Basic math
+  total_instances = var.web_instances + var.app_instances
+  average_cpu = (var.web_cpu + var.app_cpu) / 2
   
-  # Cost calculations
-  total_cost = sum(var.costs)
-  average_cost = local.total_cost / length(var.costs)
+  # Min/Max functions
+  min_instances = max(var.desired_instances, 1)
+  max_storage = min(var.requested_storage, 1000)
   
-  # Rounding operations
-  rounded_cost = round(local.average_cost, 2)
-  ceiling_cost = ceil(local.average_cost)
-  floor_cost = floor(local.average_cost)
+  # Absolute and ceiling/floor
+  storage_difference = abs(var.current_storage - var.target_storage)
+  rounded_cpu = ceil(var.cpu_utilization)
+  floored_memory = floor(var.memory_utilization)
   
-  # Absolute values
-  cost_difference = abs(local.max_cost - local.min_cost)
+  # Power and logarithm
+  storage_power_of_2 = pow(2, var.storage_exponent)
+  log_value = log(var.numeric_value, 10)
   
-  # Logarithmic operations
-  log_instances = log(local.total_instances, 2)
+  # Modulo operations
+  instance_az_index = var.instance_index % length(data.aws_availability_zones.available.names)
+}
+
+# Use in resource sizing
+resource "aws_instance" "web" {
+  count = local.min_instances
   
-  # Power operations
-  squared_instances = pow(local.total_instances, 2)
+  ami           = data.aws_ami.amazon_linux.id
+  instance_type = local.rounded_cpu > 2 ? "t3.large" : "t3.medium"
+  
+  availability_zone = data.aws_availability_zones.available.names[local.instance_az_index]
+  
+  root_block_device {
+    volume_size = local.max_storage
+  }
+  
+  tags = {
+    Name = "${local.project_name}-web-${count.index + 1}"
+  }
 }
 ```
 
 ### Collection Functions
-
 ```hcl
-variable "server_configs" {
-  type = map(object({
-    instance_type = string
-    environment   = string
-    backup_enabled = bool
+# Sample data
+variable "instance_configs" {
+  type = list(object({
+    name = string
+    type = string
+    size = number
   }))
   
-  default = {
-    web1 = {
-      instance_type = "t3.medium"
-      environment   = "prod"
-      backup_enabled = true
-    }
-    web2 = {
-      instance_type = "t3.small"
-      environment   = "dev"
-      backup_enabled = false
-    }
-    db1 = {
-      instance_type = "t3.large"
-      environment   = "prod"
-      backup_enabled = true
-    }
-  }
+  default = [
+    { name = "web-1", type = "t3.medium", size = 20 },
+    { name = "web-2", type = "t3.large", size = 50 },
+    { name = "app-1", type = "t3.xlarge", size = 100 }
+  ]
 }
 
 locals {
-  # List operations
-  server_names = keys(var.server_configs)
-  server_values = values(var.server_configs)
-  
-  # Length operations
-  server_count = length(var.server_configs)
+  # Length function
+  instance_count = length(var.instance_configs)
   
   # Element access
-  first_server = element(local.server_names, 0)
+  first_instance = element(var.instance_configs, 0)
+  last_instance = element(var.instance_configs, length(var.instance_configs) - 1)
   
-  # Index operations
-  web1_index = index(local.server_names, "web1")
+  # Index function
+  web_instance_index = index([for config in var.instance_configs : config.name], "web-1")
   
-  # Contains operations
-  has_web1 = contains(local.server_names, "web1")
+  # Contains function
+  has_large_instances = contains([for config in var.instance_configs : config.type], "t3.large")
   
   # Distinct values
-  unique_environments = distinct([
-    for config in var.server_configs : config.environment
-  ])
-  
-  unique_instance_types = distinct([
-    for config in var.server_configs : config.instance_type
-  ])
+  unique_instance_types = distinct([for config in var.instance_configs : config.type])
   
   # Sorting
-  sorted_server_names = sort(local.server_names)
+  sorted_by_size = sort([for config in var.instance_configs : config.size])
   
   # Reverse
-  reversed_names = reverse(local.sorted_server_names)
+  reversed_configs = reverse(var.instance_configs)
   
   # Slice operations
-  first_two_servers = slice(local.server_names, 0, 2)
+  first_two_instances = slice(var.instance_configs, 0, 2)
   
   # Flatten nested lists
   all_tags = flatten([
-    for name, config in var.server_configs : [
-      "Name:${name}",
-      "Type:${config.instance_type}",
-      "Env:${config.environment}"
+    for config in var.instance_configs : [
+      "Name:${config.name}",
+      "Type:${config.type}",
+      "Size:${config.size}"
     ]
   ])
   
   # Compact (remove empty values)
   non_empty_names = compact([
-    for name in local.server_names : name != "" ? name : null
+    for config in var.instance_configs : 
+    config.name != "" ? config.name : null
   ])
 }
 ```
 
-### Type Conversion Functions
-
+### Map and Set Functions
 ```hcl
-variable "mixed_inputs" {
-  type = map(any)
+variable "environment_configs" {
+  type = map(object({
+    instance_type = string
+    min_size     = number
+    max_size     = number
+  }))
+  
   default = {
-    port_string = "8080"
-    enable_flag = "true"
-    count_number = 5
-    tags_json = "{\"Environment\":\"prod\",\"Team\":\"backend\"}"
+    dev = {
+      instance_type = "t3.micro"
+      min_size     = 1
+      max_size     = 2
+    }
+    staging = {
+      instance_type = "t3.small"
+      min_size     = 2
+      max_size     = 4
+    }
+    prod = {
+      instance_type = "t3.medium"
+      min_size     = 3
+      max_size     = 10
+    }
   }
 }
 
 locals {
-  # String conversions
-  port_number = tonumber(var.mixed_inputs.port_string)
-  count_string = tostring(var.mixed_inputs.count_number)
+  # Keys and values
+  environment_names = keys(var.environment_configs)
+  instance_types = values(var.environment_configs)[*].instance_type
   
-  # Boolean conversions
-  enable_boolean = tobool(var.mixed_inputs.enable_flag)
+  # Lookup with default
+  current_config = lookup(var.environment_configs, var.environment, {
+    instance_type = "t3.micro"
+    min_size     = 1
+    max_size     = 1
+  })
   
-  # List conversions
-  server_list = tolist(["web1", "web2", "db1"])
-  server_set = toset(local.server_list)
+  # Merge maps
+  default_tags = {
+    ManagedBy = "terraform"
+    Project   = var.project_name
+  }
   
-  # Map conversions
-  tags_map = jsondecode(var.mixed_inputs.tags_json)
-  tags_json = jsonencode(local.tags_map)
+  environment_tags = {
+    Environment = var.environment
+    CostCenter  = var.cost_center
+  }
   
-  # Type checking
-  is_string = can(tostring(var.mixed_inputs.port_string))
-  is_number = can(tonumber(var.mixed_inputs.count_number))
-  is_bool = can(tobool(var.mixed_inputs.enable_flag))
+  all_tags = merge(local.default_tags, local.environment_tags, var.additional_tags)
   
-  # Safe conversions with try
-  safe_port = try(tonumber(var.mixed_inputs.port_string), 80)
-  safe_enable = try(tobool(var.mixed_inputs.enable_flag), false)
+  # Convert between types
+  environment_set = toset(local.environment_names)
+  config_list = [for env, config in var.environment_configs : config]
+  
+  # Zipmap (create map from two lists)
+  env_instance_map = zipmap(
+    local.environment_names,
+    [for config in local.config_list : config.instance_type]
+  )
 }
 ```
 
-### Date and Time Functions
+## Advanced Locals Patterns
 
+### Complex Data Processing
+```hcl
+# Process complex subnet configurations
+variable "vpc_config" {
+  type = object({
+    cidr_block = string
+    azs        = list(string)
+    
+    public_subnets = object({
+      count       = number
+      cidr_prefix = number
+    })
+    
+    private_subnets = object({
+      count       = number
+      cidr_prefix = number
+    })
+    
+    database_subnets = object({
+      count       = number
+      cidr_prefix = number
+    })
+  })
+}
+
+locals {
+  # Calculate subnet CIDRs
+  public_subnet_cidrs = [
+    for i in range(var.vpc_config.public_subnets.count) :
+    cidrsubnet(var.vpc_config.cidr_block, var.vpc_config.public_subnets.cidr_prefix, i)
+  ]
+  
+  private_subnet_cidrs = [
+    for i in range(var.vpc_config.private_subnets.count) :
+    cidrsubnet(var.vpc_config.cidr_block, var.vpc_config.private_subnets.cidr_prefix, i + 10)
+  ]
+  
+  database_subnet_cidrs = [
+    for i in range(var.vpc_config.database_subnets.count) :
+    cidrsubnet(var.vpc_config.cidr_block, var.vpc_config.database_subnets.cidr_prefix, i + 20)
+  ]
+  
+  # Create comprehensive subnet configuration
+  subnet_configs = merge(
+    # Public subnets
+    {
+      for i, cidr in local.public_subnet_cidrs :
+      "public-${i + 1}" => {
+        cidr_block        = cidr
+        availability_zone = var.vpc_config.azs[i % length(var.vpc_config.azs)]
+        type             = "public"
+        route_table      = "public"
+        nat_gateway      = false
+      }
+    },
+    # Private subnets
+    {
+      for i, cidr in local.private_subnet_cidrs :
+      "private-${i + 1}" => {
+        cidr_block        = cidr
+        availability_zone = var.vpc_config.azs[i % length(var.vpc_config.azs)]
+        type             = "private"
+        route_table      = "private-${i % length(var.vpc_config.azs)}"
+        nat_gateway      = true
+      }
+    },
+    # Database subnets
+    {
+      for i, cidr in local.database_subnet_cidrs :
+      "database-${i + 1}" => {
+        cidr_block        = cidr
+        availability_zone = var.vpc_config.azs[i % length(var.vpc_config.azs)]
+        type             = "database"
+        route_table      = "database"
+        nat_gateway      = false
+      }
+    }
+  )
+  
+  # Group subnets by type
+  subnets_by_type = {
+    for type in ["public", "private", "database"] :
+    type => {
+      for name, config in local.subnet_configs :
+      name => config
+      if config.type == type
+    }
+  }
+}
+```
+
+### Environment-Specific Processing
+```hcl
+# Environment-specific configuration processing
+locals {
+  # Base configuration
+  base_config = {
+    monitoring_enabled = true
+    backup_enabled    = true
+    encryption_enabled = true
+  }
+  
+  # Environment-specific overrides
+  environment_overrides = {
+    development = {
+      monitoring_enabled = false
+      backup_enabled    = false
+      instance_type     = "t3.micro"
+      storage_size      = 20
+      replica_count     = 0
+    }
+    
+    staging = {
+      monitoring_enabled = true
+      backup_enabled    = true
+      instance_type     = "t3.small"
+      storage_size      = 100
+      replica_count     = 1
+    }
+    
+    production = {
+      monitoring_enabled = true
+      backup_enabled    = true
+      instance_type     = "t3.large"
+      storage_size      = 500
+      replica_count     = 2
+    }
+  }
+  
+  # Merge configurations
+  final_config = merge(
+    local.base_config,
+    lookup(local.environment_overrides, var.environment, {})
+  )
+  
+  # Calculate derived values
+  total_storage_needed = local.final_config.storage_size * (1 + local.final_config.replica_count)
+  
+  # Determine features to enable
+  features_enabled = {
+    cloudwatch_logs = local.final_config.monitoring_enabled
+    cloudwatch_metrics = local.final_config.monitoring_enabled
+    backup_vault = local.final_config.backup_enabled
+    kms_encryption = local.final_config.encryption_enabled
+    multi_az = var.environment == "production"
+    auto_scaling = var.environment != "development"
+  }
+}
+```
+
+## Date and Time Functions
 ```hcl
 locals {
   # Current timestamp
   current_time = timestamp()
   
-  # Formatted timestamps
-  deployment_date = formatdate("YYYY-MM-DD", timestamp())
-  deployment_time = formatdate("YYYY-MM-DD hh:mm:ss ZZZ", timestamp())
+  # Formatted dates
+  date_stamp = formatdate("YYYY-MM-DD", timestamp())
+  time_stamp = formatdate("hh:mm:ss", timestamp())
+  iso_timestamp = formatdate("YYYY-MM-DD'T'hh:mm:ssZ", timestamp())
   
   # Custom date formats
-  log_timestamp = formatdate("YYYY-MM-DD'T'hh:mm:ss'Z'", timestamp())
-  human_readable = formatdate("DD MMM YYYY at hh:mm", timestamp())
+  backup_suffix = formatdate("YYYY-MM-DD-hhmm", timestamp())
+  log_prefix = formatdate("YYYY/MM/DD", timestamp())
   
-  # Time-based naming
-  backup_suffix = formatdate("YYYYMMDD-hhmmss", timestamp())
-  log_file_name = "application-${formatdate("YYYY-MM-DD", timestamp())}.log"
+  # Date arithmetic (using timeadd function)
+  backup_expiry = timeadd(timestamp(), "720h") # 30 days
   
-  # Time-based conditionals
-  is_weekend = contains(["Sat", "Sun"], formatdate("EEE", timestamp()))
-  is_business_hours = (
-    tonumber(formatdate("hh", timestamp())) >= 9 &&
-    tonumber(formatdate("hh", timestamp())) <= 17
-  )
+  # Use in resource naming
+  snapshot_name = "${var.project_name}-snapshot-${local.backup_suffix}"
+  log_group_name = "/aws/lambda/${var.project_name}/${local.log_prefix}"
 }
 
 # Use in resources
-resource "aws_s3_object" "backup" {
-  bucket = aws_s3_bucket.backups.id
-  key    = "backup-${local.backup_suffix}.tar.gz"
-  source = "/tmp/backup.tar.gz"
+resource "aws_db_snapshot" "manual" {
+  db_instance_identifier = aws_db_instance.main.id
+  db_snapshot_identifier = local.snapshot_name
   
-  tags = merge(local.common_tags, {
-    BackupDate = local.deployment_date
-    BackupTime = local.deployment_time
-  })
+  tags = {
+    Name      = local.snapshot_name
+    CreatedAt = local.current_time
+    ExpiresAt = local.backup_expiry
+  }
 }
 ```
 
-### Encoding Functions
-
+## File and Template Functions
 ```hcl
 locals {
+  # Read files
+  ssh_public_key = file("${path.module}/keys/id_rsa.pub")
+  
+  # Base64 encoding
+  user_data_script = base64encode(file("${path.module}/scripts/user-data.sh"))
+  
+  # Template files
+  nginx_config = templatefile("${path.module}/templates/nginx.conf.tpl", {
+    server_name = var.domain_name
+    backend_port = var.backend_port
+    ssl_cert_path = var.ssl_certificate_path
+  })
+  
+  # JSON encoding/decoding
+  app_config_json = jsonencode({
+    database = {
+      host = aws_db_instance.main.endpoint
+      port = aws_db_instance.main.port
+      name = aws_db_instance.main.db_name
+    }
+    cache = {
+      host = aws_elasticache_cluster.main.cache_nodes[0].address
+      port = aws_elasticache_cluster.main.cache_nodes[0].port
+    }
+    features = local.features_enabled
+  })
+  
+  # YAML encoding
+  kubernetes_config = yamlencode({
+    apiVersion = "v1"
+    kind = "ConfigMap"
+    metadata = {
+      name = "${var.project_name}-config"
+    }
+    data = {
+      "app.json" = local.app_config_json
+    }
+  })
+  
+  # File hashing for change detection
+  config_hash = filemd5("${path.module}/config/app.conf")
+  script_hash = filesha256("${path.module}/scripts/deploy.sh")
+}
+
+# Use in resources
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.amazon_linux.id
+  instance_type = local.final_config.instance_type
+  key_name      = aws_key_pair.main.key_name
+  
+  user_data = local.user_data_script
+  
+  tags = {
+    Name       = "${var.project_name}-web"
+    ConfigHash = local.config_hash
+    ScriptHash = local.script_hash
+  }
+}
+
+resource "aws_key_pair" "main" {
+  key_name   = "${var.project_name}-key"
+  public_key = local.ssh_public_key
+}
+```
+
+## Network and Encoding Functions
+```hcl
+locals {
+  # CIDR functions
+  vpc_cidr = "10.0.0.0/16"
+  
+  # Calculate subnet CIDRs
+  public_cidrs = [
+    for i in range(3) : cidrsubnet(local.vpc_cidr, 8, i)
+  ]
+  
+  private_cidrs = [
+    for i in range(3) : cidrsubnet(local.vpc_cidr, 8, i + 10)
+  ]
+  
+  # CIDR host calculations
+  first_host = cidrhost(local.vpc_cidr, 1)
+  last_host = cidrhost(local.vpc_cidr, -2)
+  
+  # Network mask
+  network_mask = cidrnetmask(local.vpc_cidr)
+  
   # Base64 encoding/decoding
-  encoded_data = base64encode("Hello, World!")
-  decoded_data = base64decode(local.encoded_data)
+  encoded_secret = base64encode(var.database_password)
   
   # URL encoding
   encoded_url = urlencode("https://example.com/path with spaces")
   
-  # JSON operations
-  config_json = jsonencode({
-    database = {
-      host = "localhost"
-      port = 5432
-      ssl  = true
-    }
-    cache = {
-      host = "redis.example.com"
-      port = 6379
-    }
-  })
+  # UUID generation
+  unique_id = uuidv4()
   
-  parsed_config = jsondecode(local.config_json)
-  
-  # YAML operations (if using yamlencode/yamldecode)
-  config_yaml = yamlencode({
-    apiVersion = "v1"
-    kind = "ConfigMap"
-    metadata = {
-      name = "app-config"
-    }
-    data = {
-      database_url = "postgresql://localhost:5432/myapp"
-      redis_url = "redis://localhost:6379"
-    }
-  })
+  # MD5 and SHA hashing
+  password_hash = md5(var.database_password)
+  config_signature = sha256(local.app_config_json)
 }
 
-# Use encoded data in user data
-resource "aws_instance" "web" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.micro"
+# Use in networking resources
+resource "aws_subnet" "public" {
+  count = length(local.public_cidrs)
   
-  user_data = base64encode(templatefile("${path.module}/templates/init.sh", {
-    config = local.config_json
-  }))
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = local.public_cidrs[count.index]
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  map_public_ip_on_launch = true
+  
+  tags = {
+    Name = "${var.project_name}-public-${count.index + 1}"
+    CIDR = local.public_cidrs[count.index]
+    FirstHost = cidrhost(local.public_cidrs[count.index], 1)
+  }
 }
 ```
 
-## Advanced Local Patterns
-
-### Conditional Logic in Locals
-
+## Type Conversion Functions
 ```hcl
-variable "environment" {
-  type = string
-}
-
-variable "high_availability" {
-  type = bool
-  default = false
-}
-
-locals {
-  # Environment-based configuration
-  env_config = var.environment == "prod" ? {
-    instance_type = "t3.large"
-    instance_count = 3
-    backup_retention = 30
-    monitoring = true
-  } : var.environment == "staging" ? {
-    instance_type = "t3.medium"
-    instance_count = 2
-    backup_retention = 7
-    monitoring = true
-  } : {
-    instance_type = "t3.micro"
-    instance_count = 1
-    backup_retention = 1
-    monitoring = false
-  }
-  
-  # High availability configuration
-  ha_config = var.high_availability ? {
-    multi_az = true
-    backup_enabled = true
-    monitoring_enhanced = true
-    instance_count = max(local.env_config.instance_count, 2)
-  } : {
-    multi_az = false
-    backup_enabled = local.env_config.backup_retention > 1
-    monitoring_enhanced = false
-    instance_count = local.env_config.instance_count
-  }
-  
-  # Final merged configuration
-  final_config = merge(local.env_config, local.ha_config)
-}
-```
-
-### Complex Data Transformations
-
-```hcl
-variable "applications" {
-  type = map(object({
-    port = number
-    health_check_path = string
-    environment_vars = map(string)
-    scaling = object({
-      min = number
-      max = number
-    })
-  }))
+variable "mixed_inputs" {
+  description = "Mixed input types for conversion examples"
+  type = object({
+    string_number = string
+    number_string = number
+    list_set      = list(string)
+    map_object    = map(string)
+  })
   
   default = {
-    web = {
-      port = 8080
-      health_check_path = "/health"
-      environment_vars = {
-        LOG_LEVEL = "info"
-        DB_POOL_SIZE = "10"
-      }
-      scaling = {
-        min = 2
-        max = 10
-      }
-    }
-    api = {
-      port = 3000
-      health_check_path = "/api/health"
-      environment_vars = {
-        LOG_LEVEL = "debug"
-        CACHE_TTL = "300"
-      }
-      scaling = {
-        min = 1
-        max = 5
-      }
+    string_number = "42"
+    number_string = 3.14
+    list_set      = ["a", "b", "c", "a"]
+    map_object    = {
+      key1 = "value1"
+      key2 = "value2"
     }
   }
 }
 
 locals {
-  # Transform applications for load balancer target groups
-  target_groups = {
-    for app_name, app_config in var.applications :
-    app_name => {
-      name = "${var.project_name}-${app_name}-tg"
-      port = app_config.port
-      health_check = {
-        path = app_config.health_check_path
-        port = app_config.port
-        protocol = "HTTP"
-        healthy_threshold = 2
-        unhealthy_threshold = 2
-        timeout = 5
-        interval = 30
-      }
+  # Type conversions
+  number_from_string = tonumber(var.mixed_inputs.string_number)  # 42
+  string_from_number = tostring(var.mixed_inputs.number_string)  # "3.14"
+  
+  # Collection conversions
+  set_from_list = toset(var.mixed_inputs.list_set)              # {"a", "b", "c"}
+  list_from_set = tolist(local.set_from_list)                   # ["a", "b", "c"]
+  
+  # Map conversions
+  object_from_map = var.mixed_inputs.map_object
+  map_from_object = local.object_from_map
+  
+  # Boolean conversions
+  bool_from_string = tobool("true")                             # true
+  bool_from_number = var.mixed_inputs.string_number != "0"      # true
+  
+  # Complex type conversions
+  instance_map = {
+    for i in range(3) : 
+    "instance-${i}" => {
+      name = "web-${i}"
+      type = "t3.micro"
+      az   = data.aws_availability_zones.available.names[i % length(data.aws_availability_zones.available.names)]
     }
   }
   
-  # Transform for auto scaling groups
-  auto_scaling_groups = {
-    for app_name, app_config in var.applications :
-    app_name => {
-      name = "${var.project_name}-${app_name}-asg"
-      min_size = app_config.scaling.min
-      max_size = app_config.scaling.max
-      desired_capacity = app_config.scaling.min
-      
-      # Compute launch template user data
-      user_data = base64encode(templatefile("${path.module}/templates/app_init.sh", {
-        app_name = app_name
-        app_port = app_config.port
-        environment_vars = app_config.environment_vars
-      }))
-    }
-  }
-  
-  # Aggregate statistics
-  app_stats = {
-    total_apps = length(var.applications)
-    total_min_instances = sum([for app in var.applications : app.scaling.min])
-    total_max_instances = sum([for app in var.applications : app.scaling.max])
-    unique_ports = distinct([for app in var.applications : app.port])
-    
-    # Cost estimation
-    estimated_min_cost = local.app_stats.total_min_instances * 0.0464 * 24 * 30  # t3.micro monthly
-    estimated_max_cost = local.app_stats.total_max_instances * 0.0464 * 24 * 30
-  }
-}
-```
-
-### Dynamic Resource Configuration
-
-```hcl
-variable "security_rules" {
-  type = list(object({
-    name = string
-    type = string
-    from_port = number
-    to_port = number
-    protocol = string
-    cidr_blocks = list(string)
-    description = string
-  }))
-  
-  default = [
-    {
-      name = "http"
-      type = "ingress"
-      from_port = 80
-      to_port = 80
-      protocol = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      description = "HTTP access"
-    },
-    {
-      name = "https"
-      type = "ingress"
-      from_port = 443
-      to_port = 443
-      protocol = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      description = "HTTPS access"
-    }
+  instance_list = [
+    for key, config in local.instance_map : merge(config, {
+      id = key
+    })
   ]
 }
-
-locals {
-  # Process security rules by type
-  ingress_rules = [
-    for rule in var.security_rules : rule
-    if rule.type == "ingress"
-  ]
-  
-  egress_rules = [
-    for rule in var.security_rules : rule
-    if rule.type == "egress"
-  ]
-  
-  # Create rule maps for dynamic blocks
-  ingress_rule_map = {
-    for rule in local.ingress_rules : rule.name => rule
-  }
-  
-  egress_rule_map = {
-    for rule in local.egress_rules : rule.name => rule
-  }
-  
-  # Security group configuration
-  security_group_config = {
-    name_prefix = "${var.project_name}-sg-"
-    description = "Security group for ${var.project_name}"
-    
-    # Computed rules with validation
-    validated_ingress_rules = [
-      for rule in local.ingress_rules : merge(rule, {
-        # Add computed fields
-        rule_id = "${rule.name}-${rule.from_port}-${rule.to_port}"
-        is_wide_open = contains(rule.cidr_blocks, "0.0.0.0/0")
-      })
-    ]
-  }
-}
 ```
 
-## Performance Optimization
-
-### Efficient Local Computations
-
-```hcl
-# Avoid expensive computations in loops
-locals {
-  # Pre-compute expensive operations
-  current_time = timestamp()
-  region_azs = data.aws_availability_zones.available.names
-  
-  # Use maps for O(1) lookups instead of lists
-  instance_type_specs = {
-    "t3.micro"  = { vcpus = 2, memory = 1, cost_per_hour = 0.0104 }
-    "t3.small"  = { vcpus = 2, memory = 2, cost_per_hour = 0.0208 }
-    "t3.medium" = { vcpus = 2, memory = 4, cost_per_hour = 0.0416 }
-    "t3.large"  = { vcpus = 2, memory = 8, cost_per_hour = 0.0832 }
-  }
-  
-  # Efficient subnet calculation
-  subnet_configs = {
-    for i in range(length(local.region_azs)) : 
-    local.region_azs[i] => {
-      cidr_block = "10.0.${i + 1}.0/24"
-      availability_zone = local.region_azs[i]
-      # Pre-compute subnet properties
-      network_address = cidrhost("10.0.${i + 1}.0/24", 0)
-      broadcast_address = cidrhost("10.0.${i + 1}.0/24", -1)
-      usable_ips = pow(2, 32 - 24) - 2
-    }
-  }
-}
-```
-
-### Memory-Efficient Patterns
-
-```hcl
-# Avoid creating large intermediate data structures
-locals {
-  # Instead of creating large lists, use generators
-  large_dataset_processor = {
-    for i in range(1000) : "item-${i}" => {
-      # Only compute what's needed
-      id = i
-      name = "item-${i}"
-      # Avoid storing large computed values
-    }
-  }
-  
-  # Use conditional processing
-  filtered_items = {
-    for k, v in local.large_dataset_processor : k => v
-    if v.id % 10 == 0  # Only process every 10th item
-  }
-}
-```
-
-## Error Handling and Validation
-
-### Safe Function Usage
-
-```hcl
-variable "optional_config" {
-  type = map(any)
-  default = {}
-}
-
-locals {
-  # Safe access with try()
-  database_port = try(tonumber(var.optional_config.database_port), 5432)
-  cache_enabled = try(tobool(var.optional_config.cache_enabled), false)
-  
-  # Safe string operations
-  safe_project_name = try(
-    replace(lower(trimspace(var.project_name)), " ", "-"),
-    "default-project"
-  )
-  
-  # Safe list operations
-  safe_subnet_count = try(
-    length(var.subnet_cidrs) > 0 ? length(var.subnet_cidrs) : 2,
-    2
-  )
-  
-  # Validation with can()
-  is_valid_cidr = can(cidrhost(var.vpc_cidr, 0))
-  is_valid_json = can(jsondecode(var.config_json))
-  
-  # Conditional validation
-  validation_results = {
-    cidr_valid = local.is_valid_cidr
-    json_valid = local.is_valid_json
-    name_valid = can(regex("^[a-zA-Z][a-zA-Z0-9-]*$", local.safe_project_name))
-  }
-  
-  # Fail fast on critical validations
-  critical_validation = alltrue(values(local.validation_results)) ? null : file("ERROR: Validation failed: ${jsonencode(local.validation_results)}")
-}
-```
-
-## Testing and Debugging
-
-### Local Value Testing
-
-```hcl
-# test-locals.tf
-locals {
-  # Test scenarios
-  test_scenarios = {
-    scenario_1 = {
-      input = {
-        environment = "dev"
-        instance_count = 1
-      }
-      expected = {
-        instance_type = "t3.micro"
-        monitoring = false
-      }
-    }
-    
-    scenario_2 = {
-      input = {
-        environment = "prod"
-        instance_count = 3
-      }
-      expected = {
-        instance_type = "t3.large"
-        monitoring = true
-      }
-    }
-  }
-  
-  # Test results
-  test_results = {
-    for name, scenario in local.test_scenarios :
-    name => {
-      passed = (
-        local.compute_config(scenario.input).instance_type == scenario.expected.instance_type &&
-        local.compute_config(scenario.input).monitoring == scenario.expected.monitoring
-      )
-    }
-  }
-  
-  # Helper function simulation
-  compute_config = {
-    dev = {
-      instance_type = "t3.micro"
-      monitoring = false
-    }
-    prod = {
-      instance_type = "t3.large"
-      monitoring = true
-    }
-  }
-}
-
-# Debug output
-output "test_results" {
-  value = local.test_results
-}
-```
-
-### Debugging Techniques
-
-```bash
-# Debug local values
-terraform console
-> local.common_tags
-> local.network_config
-> local.instance_config
-
-# Validate computations
-terraform plan | grep -A 10 "local.computed_value"
-
-# Test functions
-terraform console
-> formatdate("YYYY-MM-DD", timestamp())
-> base64encode("test string")
-> jsonencode({"key": "value"})
-```
-
-## Best Practices
-
-### 1. Organization and Naming
-
-```hcl
-# Good: Organized and descriptive
-locals {
-  # Environment configuration
-  env_config = { ... }
-  
-  # Network configuration
-  network_config = { ... }
-  
-  # Security configuration
-  security_config = { ... }
-  
-  # Computed values
-  computed_tags = { ... }
-  computed_names = { ... }
-}
-```
-
-### 2. Performance Considerations
-
-```hcl
-# Good: Pre-compute expensive operations
-locals {
-  current_time = timestamp()
-  available_azs = data.aws_availability_zones.available.names
-}
-
-# Avoid: Repeated expensive computations
-resource "aws_subnet" "public" {
-  count = 3
-  # Bad: timestamp() called multiple times
-  # availability_zone = data.aws_availability_zones.available.names[count.index]
-  
-  # Good: Use pre-computed value
-  availability_zone = local.available_azs[count.index]
-}
-```
-
-### 3. Error Handling
-
-```hcl
-# Always validate inputs
-locals {
-  # Validate and provide defaults
-  safe_instance_count = try(
-    var.instance_count > 0 && var.instance_count <= 10 ? var.instance_count : 1,
-    1
-  )
-  
-  # Validate complex data
-  validated_config = can(jsondecode(var.config_json)) ? jsondecode(var.config_json) : {}
-}
-```
-
-## Conclusion
-
-Locals and functions enable:
-- **Code Reusability**: Avoid repeating complex expressions
-- **Data Transformation**: Process and reshape data efficiently
-- **Performance Optimization**: Pre-compute expensive operations
-- **Maintainability**: Centralize complex logic
-
-Key takeaways:
-- Use locals for computed values and complex expressions
-- Leverage built-in functions for data manipulation
-- Optimize performance by pre-computing expensive operations
-- Handle errors gracefully with try() and can()
-- Organize locals logically and use descriptive names
-- Test and validate local computations
+This comprehensive guide covers all essential Terraform functions and local value patterns, demonstrating practical usage in real infrastructure scenarios.

@@ -1,394 +1,153 @@
-# Problem 06: Variables - Basic Types and Usage
+# Problem-06-Variables-Basic: Variables and Input Validation
 
-## Overview
+## 🎯 Overview
 
-This solution provides comprehensive understanding of Terraform variables, focusing on basic data types, variable definitions, usage patterns, and best practices. Mastering variables is essential for creating flexible and reusable Terraform configurations.
+This problem focuses on mastering variables and input validation through comprehensive theory and hands-on practice. You'll learn fundamental concepts, implementation patterns, and production-ready techniques essential for Terraform expertise.
 
-## Learning Objectives
+## 📚 Learning Objectives
 
-- Understand Terraform variable concepts and purposes
-- Master basic variable data types (string, number, bool)
-- Learn variable definition syntax and best practices
-- Understand variable precedence and resolution
-- Learn variable validation and constraints
-- Master variable usage patterns and expressions
-- Understand variable file organization and management
+By completing this problem, you will:
+- ✅ Master core concepts and implementation patterns
+- ✅ Understand best practices and real-world applications  
+- ✅ Build production-ready configurations
+- ✅ Develop troubleshooting and debugging skills
+- ✅ Apply enterprise-grade patterns and security practices
 
-## Problem Statement
+## 📁 Problem Structure
 
-You've mastered resource lifecycle and state management concepts. Now your team lead wants you to become proficient in Terraform variables, starting with basic types and usage patterns. You need to understand how to define, validate, and use variables effectively in your configurations.
-
-## Solution Components
-
-This solution includes:
-1. **Variable Fundamentals** - Understanding what variables are and why they're important
-2. **Basic Data Types** - String, number, and boolean variables
-3. **Variable Definition** - Syntax, validation, and best practices
-4. **Variable Usage** - Referencing variables in configurations
-5. **Variable Precedence** - Understanding how Terraform resolves variable values
-6. **Variable Files** - Organization and management of variable files
-7. **Best Practices** - Security, validation, and maintenance
-
-## Implementation Guide
-
-### Step 1: Understanding Variable Fundamentals
-
-#### What are Variables?
-Variables in Terraform are input parameters that allow you to customize your configuration without modifying the code. They make your configurations:
-- **Flexible**: Same code for different environments
-- **Reusable**: Share configurations across projects
-- **Maintainable**: Change values without code changes
-
-#### Variable Benefits
-- **Environment-specific values**: Different values for dev/staging/prod
-- **Team collaboration**: Share configurations with different settings
-- **Security**: Keep sensitive values out of code
-- **Flexibility**: Easy to modify without code changes
-
-### Step 2: Basic Data Types
-
-#### String Variables
-```hcl
-variable "project_name" {
-  description = "Name of the project"
-  type        = string
-  default     = "my-project"
-}
-
-variable "environment" {
-  description = "Environment name"
-  type        = string
-  default     = "development"
-}
-
-variable "region" {
-  description = "AWS region"
-  type        = string
-  default     = "us-west-2"
-}
+```
+Problem-06-Variables-Basic/
+├── README.md                           # This overview file
+├── COMPREHENSIVE-VARIABLES-AND-INPUT-VALIDATION-GUIDE.md           # Complete implementation guide
+├── HANDS-ON-EXERCISES.md              # Progressive practical exercises
+├── TROUBLESHOOTING-GUIDE.md           # Common issues and solutions
+├── main.tf                            # Working examples
+├── variables.tf                       # Variable definitions
+├── outputs.tf                         # Output examples
+├── terraform.tfvars.example           # Example configuration
+└── templates/                         # Template files (if applicable)
 ```
 
-#### Number Variables
-```hcl
-variable "instance_count" {
-  description = "Number of instances to create"
-  type        = number
-  default     = 1
-}
+## 🚀 Getting Started
 
-variable "instance_size" {
-  description = "Instance size multiplier"
-  type        = number
-  default     = 1.0
-}
+### Prerequisites
+- Terraform >= 1.0 installed
+- AWS CLI configured with appropriate permissions
+- Understanding of previous problems (if applicable)
 
-variable "port" {
-  description = "Port number"
-  type        = number
-  default     = 80
-}
-```
-
-#### Boolean Variables
-```hcl
-variable "enable_monitoring" {
-  description = "Enable monitoring"
-  type        = bool
-  default     = true
-}
-
-variable "create_database" {
-  description = "Create database instance"
-  type        = bool
-  default     = false
-}
-
-variable "enable_encryption" {
-  description = "Enable encryption"
-  type        = bool
-  default     = true
-}
-```
-
-### Step 3: Variable Definition Best Practices
-
-#### Complete Variable Definition
-```hcl
-variable "instance_type" {
-  description = "EC2 instance type for web servers"
-  type        = string
-  default     = "t3.micro"
-  
-  validation {
-    condition     = can(regex("^[a-z0-9.]+$", var.instance_type))
-    error_message = "Instance type must be a valid AWS instance type."
-  }
-}
-```
-
-#### Variable Components
-- **description**: Documentation for the variable
-- **type**: Data type constraint
-- **default**: Default value if not provided
-- **validation**: Rules to validate input values
-
-### Step 4: Variable Usage Patterns
-
-#### Basic Variable References
-```hcl
-# Reference variables with var. prefix
-resource "aws_instance" "web" {
-  ami           = var.ami_id
-  instance_type = var.instance_type
-  count         = var.instance_count
-  
-  tags = {
-    Name        = var.project_name
-    Environment = var.environment
-  }
-}
-```
-
-#### Conditional Variable Usage
-```hcl
-# Use variables in conditional expressions
-resource "aws_instance" "web" {
-  count = var.create_instances ? var.instance_count : 0
-  
-  ami           = var.ami_id
-  instance_type = var.environment == "production" ? "t3.large" : var.instance_type
-  
-  monitoring = var.enable_monitoring
-}
-```
-
-#### Variable Interpolation
-```hcl
-# Use variables in string interpolation
-resource "aws_s3_bucket" "main" {
-  bucket = "${var.project_name}-${var.environment}-bucket"
-  
-  tags = {
-    Name        = "${var.project_name}-${var.environment}"
-    Environment = var.environment
-    Project     = var.project_name
-  }
-}
-```
-
-### Step 5: Variable Precedence
-
-#### Precedence Order (highest to lowest)
-1. **Command line**: `-var` flag
-2. **Environment variables**: `TF_VAR_*`
-3. **Variable files**: `terraform.tfvars`
-4. **Default values**: In variable definition
-
-#### Examples
+### Quick Start
 ```bash
-# Command line (highest precedence)
-terraform apply -var="instance_count=5"
+# 1. Navigate to the problem directory
+cd Problem-06-Variables-Basic
 
-# Environment variable
-export TF_VAR_instance_count=3
+# 2. Copy example variables
+cp terraform.tfvars.example terraform.tfvars
 
-# Variable file
-echo 'instance_count = 2' > terraform.tfvars
+# 3. Edit variables for your environment
+vim terraform.tfvars
 
-# Default value (lowest precedence)
-variable "instance_count" {
-  default = 1
-}
+# 4. Initialize Terraform
+terraform init
+
+# 5. Review the execution plan
+terraform plan
+
+# 6. Apply the configuration
+terraform apply
 ```
 
-### Step 6: Variable Files Organization
+## 📖 Learning Path
 
-#### terraform.tfvars
-```hcl
-# Main variable file
-project_name = "my-web-app"
-environment = "production"
-instance_count = 3
-instance_type = "t3.large"
-enable_monitoring = true
-```
+### Step 1: Study the Comprehensive Guide
+Start with `COMPREHENSIVE-VARIABLES-AND-INPUT-VALIDATION-GUIDE.md` to understand:
+- Theoretical foundations and core concepts
+- Advanced implementation patterns
+- Security and performance considerations
+- Enterprise best practices
 
-#### terraform.tfvars.example
-```hcl
-# Example variable file
-project_name = "example-project"
-environment = "development"
-instance_count = 1
-instance_type = "t3.micro"
-enable_monitoring = false
-```
+### Step 2: Complete Hands-On Exercises
+Work through `HANDS-ON-EXERCISES.md` which includes:
+- **Exercise 1**: Basic Implementation (30-45 min)
+- **Exercise 2**: Advanced Patterns (45-60 min)
+- **Exercise 3**: Production Scenarios (60-90 min)
+- **Exercise 4**: Troubleshooting Practice (30 min)
 
-#### Environment-specific files
-```hcl
-# production.tfvars
-environment = "production"
-instance_count = 5
-instance_type = "t3.large"
-enable_monitoring = true
+### Step 3: Practice Troubleshooting
+Use `TROUBLESHOOTING-GUIDE.md` to learn:
+- Common issues and error patterns
+- Advanced debugging techniques
+- Performance optimization
+- Prevention strategies
 
-# development.tfvars
-environment = "development"
-instance_count = 1
-instance_type = "t3.micro"
-enable_monitoring = false
-```
+### Step 4: Implement the Solution
+Examine the working Terraform code to see:
+- Production-ready implementations
+- Best practice patterns
+- Security configurations
+- Performance optimizations
 
-### Step 7: Variable Validation
+## 🎯 Key Concepts Demonstrated
 
-#### String Validation
-```hcl
-variable "environment" {
-  description = "Environment name"
-  type        = string
-  default     = "development"
-  
-  validation {
-    condition     = contains(["development", "staging", "production"], var.environment)
-    error_message = "Environment must be one of: development, staging, production."
-  }
-}
-```
+### Core Patterns
+- **Best Practices**: Industry-standard implementation patterns
+- **Security**: Security-first approach with proper configurations
+- **Performance**: Optimized resource management
+- **Maintainability**: Clean, documented, and reusable code
 
-#### Number Validation
-```hcl
-variable "instance_count" {
-  description = "Number of instances"
-  type        = number
-  default     = 1
-  
-  validation {
-    condition     = var.instance_count > 0 && var.instance_count <= 10
-    error_message = "Instance count must be between 1 and 10."
-  }
-}
-```
+### Advanced Features
+- Comprehensive variable validation
+- Dynamic resource configuration
+- Conditional logic and expressions
+- Error handling and recovery
 
-#### Boolean Validation
-```hcl
-variable "enable_monitoring" {
-  description = "Enable monitoring"
-  type        = bool
-  default     = true
-}
-```
+### Production Readiness
+- Enterprise security patterns
+- Performance optimization
+- Comprehensive error handling
+- Documentation and maintenance procedures
 
-## Expected Deliverables
+## 📊 Success Metrics
 
-### 1. Variable Definition Examples
-- Complete variable definitions for all basic types
-- Validation rules and error messages
-- Default values and descriptions
-- Best practices implementation
+After completing this problem, you should be able to:
+- [ ] Understand core concepts and principles
+- [ ] Implement basic and advanced patterns
+- [ ] Apply security best practices
+- [ ] Debug and troubleshoot issues
+- [ ] Optimize for performance
+- [ ] Document solutions properly
+- [ ] Apply enterprise patterns
+- [ ] Prepare for real-world scenarios
 
-### 2. Variable Usage Patterns
-- Basic variable references in resources
-- Conditional variable usage
-- String interpolation with variables
-- Complex variable expressions
+## 🔗 Integration with Other Problems
 
-### 3. Variable File Organization
-- Main terraform.tfvars file
-- Example variable file
-- Environment-specific variable files
-- Variable file naming conventions
+### Prerequisites (Recommended)
+- Previous problems in sequence for foundational knowledge
 
-### 4. Variable Validation Implementation
-- String validation with regex and contains
-- Number validation with ranges
-- Boolean validation patterns
-- Custom validation functions
+### Next Steps
+- Continue with subsequent problems
+- Apply learned concepts in advanced scenarios
+- Integrate with enterprise patterns
 
-### 5. Variable Precedence Documentation
-- Complete precedence order explanation
-- Examples of each precedence level
-- Best practices for variable resolution
-- Troubleshooting variable conflicts
+## 📞 Support and Resources
 
-## Knowledge Check
+### Documentation Files
+- `COMPREHENSIVE-VARIABLES-AND-INPUT-VALIDATION-GUIDE.md`: Complete theoretical and practical coverage
+- `HANDS-ON-EXERCISES.md`: Step-by-step implementation exercises
+- `TROUBLESHOOTING-GUIDE.md`: Common issues and debugging techniques
 
-Answer these questions to validate your understanding:
+### External Resources
+- [Terraform Documentation](https://www.terraform.io/docs)
+- [AWS Provider Documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
+- [HashiCorp Learn](https://learn.hashicorp.com/terraform)
 
-1. **What are Terraform variables, and why are they important?**
-   - Variables are input parameters that customize configurations
-   - They make configurations flexible, reusable, and maintainable
-   - They enable environment-specific values and team collaboration
+### Community Support
+- [HashiCorp Community Forum](https://discuss.hashicorp.com/c/terraform-core)
+- [Terraform GitHub Issues](https://github.com/hashicorp/terraform/issues)
 
-2. **What are the three basic variable data types, and how do you define them?**
-   - String: text values
-   - Number: numeric values (integers and floats)
-   - Boolean: true/false values
+---
 
-3. **How do you reference variables in Terraform configurations?**
-   - Use var. prefix followed by variable name
-   - Example: var.project_name, var.instance_count
+## 🎉 Ready to Begin?
 
-4. **What is variable precedence, and what is the order from highest to lowest?**
-   - Command line (-var flag)
-   - Environment variables (TF_VAR_*)
-   - Variable files (terraform.tfvars)
-   - Default values
+Start your variables and input validation journey by reading the comprehensive guide and then dive into the hands-on exercises. This problem will build essential skills for Terraform mastery.
 
-5. **How do you validate variable input values?**
-   - Use validation blocks with condition and error_message
-   - Use functions like contains, regex, and range checks
-
-6. **What are the best practices for variable file organization?**
-   - Use terraform.tfvars for main values
-   - Create terraform.tfvars.example for documentation
-   - Use environment-specific files for different environments
-
-7. **How do you use variables in conditional expressions and string interpolation?**
-   - Conditional: var.environment == "production" ? "t3.large" : "t3.micro"
-   - Interpolation: "${var.project_name}-${var.environment}"
-
-## Troubleshooting
-
-### Common Variable Issues
-
-#### 1. Variable Not Found
-```bash
-# Error: Reference to undeclared variable
-# Solution: Define the variable
-variable "missing_variable" {
-  description = "Missing variable"
-  type        = string
-  default     = "default-value"
-}
-```
-
-#### 2. Type Mismatch
-```bash
-# Error: Type mismatch
-# Solution: Correct the type
-variable "count" {
-  type    = number  # Not string
-  default = 3
-}
-```
-
-#### 3. Validation Failure
-```bash
-# Error: Validation failed
-# Solution: Check validation rules
-variable "environment" {
-  validation {
-    condition     = contains(["dev", "staging", "prod"], var.environment)
-    error_message = "Environment must be dev, staging, or prod."
-  }
-}
-```
-
-## Next Steps
-
-After completing this problem, you should have:
-- Deep understanding of Terraform variables
-- Knowledge of basic data types and usage patterns
-- Understanding of variable precedence and validation
-- Ability to organize and manage variable files
-
-Proceed to [Problem 07: Variables - Complex Types and Validation](../Problem-07-Variables-Complex/) to learn about advanced variable types and validation patterns.
+**Your Variables and Input Validation Mastery Journey Starts Here!** 🚀
