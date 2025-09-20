@@ -8,25 +8,25 @@ terraform {
     # AWS Provider
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.0"
+      version = "~> 5.0"
     }
     
     # Azure Provider
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.0"
+      version = "~> 3.1"
     }
     
     # Google Cloud Provider
     google = {
       source  = "hashicorp/google"
-      version = "~> 4.0"
+      version = "~> 5.0"
     }
     
     # Community Providers
     datadog = {
       source  = "DataDog/datadog"
-      version = "~> 3.0"
+      version = "~> 3.1"
     }
     
     github = {
@@ -42,7 +42,7 @@ terraform {
     # Utility Providers
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.0"
+      version = "~> 3.1"
     }
     
     local = {
@@ -52,7 +52,7 @@ terraform {
     
     null = {
       source  = "hashicorp/null"
-      version = "~> 3.0"
+      version = "~> 3.1"
     }
   }
 }

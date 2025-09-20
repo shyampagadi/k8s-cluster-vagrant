@@ -1,5 +1,5 @@
-# Problem 33: Final Project - Complete Infrastructure Solution
-# This configuration demonstrates a comprehensive Terraform solution
+# Problem 33: Final Capstone Project - Complete Enterprise Platform
+# Comprehensive enterprise-grade platform combining all learned concepts
 
 terraform {
   required_version = ">= 1.0"
@@ -8,391 +8,659 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.1"
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.23"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.11"
     }
   }
+}
+
+# Multi-region providers
+provider "aws" {
+  alias  = "primary"
+  region = var.primary_region
 }
 
 provider "aws" {
-  region = var.aws_region
+  alias  = "secondary"
+  region = var.secondary_region
 }
 
-# Data sources
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
-# Generate final project ID
-resource "random_id" "final_project_id" {
-  byte_length = 8
-}
-
-# VPC for final project
-resource "aws_vpc" "final_project" {
-  cidr_block           = var.vpc_cidr
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-
-  tags = {
-    Name        = "${var.project_name}-vpc-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
-    Purpose     = "comprehensive-solution"
+# Local values for enterprise platform
+locals {
+  # Enterprise naming convention
+  name_prefix = "${var.organization}-${var.business_unit}-${var.application_name}-${var.environment}"
+  
+  # Comprehensive tagging strategy
+  common_tags = {
+    Organization       = var.organization
+    BusinessUnit       = var.business_unit
+    Application        = var.application_name
+    Environment        = var.environment
+    CostCenter         = var.cost_center
+    Owner              = var.owner
+    ManagedBy          = "Terraform"
+    Project            = "FinalCapstone"
+    Compliance         = var.compliance_level
+    DataClassification = var.data_classification
+    BackupRequired     = "true"
+    MonitoringEnabled  = "true"
+    SecurityLevel      = "high"
   }
-}
-
-# Public subnets
-resource "aws_subnet" "public" {
-  count = length(data.aws_availability_zones.available.names)
-
-  vpc_id                  = aws_vpc.final_project.id
-  cidr_block              = cidrsubnet(var.vpc_cidr, 8, count.index)
-  availability_zone       = data.aws_availability_zones.available.names[count.index]
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name        = "${var.project_name}-public-subnet-${count.index + 1}-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
-    Type        = "public"
-  }
-}
-
-# Private subnets
-resource "aws_subnet" "private" {
-  count = length(data.aws_availability_zones.available.names)
-
-  vpc_id            = aws_vpc.final_project.id
-  cidr_block         = cidrsubnet(var.vpc_cidr, 8, count.index + 10)
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-
-  tags = {
-    Name        = "${var.project_name}-private-subnet-${count.index + 1}-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
-    Type        = "private"
-  }
-}
-
-# Internet Gateway
-resource "aws_internet_gateway" "final_project" {
-  vpc_id = aws_vpc.final_project.id
-
-  tags = {
-    Name        = "${var.project_name}-igw-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
-  }
-}
-
-# NAT Gateway
-resource "aws_eip" "nat" {
-  domain = "vpc"
-
-  tags = {
-    Name        = "${var.project_name}-nat-eip-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
-  }
-}
-
-resource "aws_nat_gateway" "final_project" {
-  allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public[0].id
-
-  tags = {
-    Name        = "${var.project_name}-nat-gateway-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
-  }
-}
-
-# Route Tables
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.final_project.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.final_project.id
-  }
-
-  tags = {
-    Name        = "${var.project_name}-public-rt-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
-  }
-}
-
-resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.final_project.id
-
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.final_project.id
-  }
-
-  tags = {
-    Name        = "${var.project_name}-private-rt-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
-  }
-}
-
-# Route Table Associations
-resource "aws_route_table_association" "public" {
-  count = length(aws_subnet.public)
-
-  subnet_id      = aws_subnet.public[count.index].id
-  route_table_id = aws_route_table.public.id
-}
-
-resource "aws_route_table_association" "private" {
-  count = length(aws_subnet.private)
-
-  subnet_id      = aws_subnet.private[count.index].id
-  route_table_id = aws_route_table.private.id
-}
-
-# Security Groups
-resource "aws_security_group" "web" {
-  name_prefix = "${var.project_name}-web-sg-${random_id.final_project_id.hex}"
-  vpc_id      = aws_vpc.final_project.id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name        = "${var.project_name}-web-sg-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
-  }
-}
-
-resource "aws_security_group" "database" {
-  name_prefix = "${var.project_name}-db-sg-${random_id.final_project_id.hex}"
-  vpc_id      = aws_vpc.final_project.id
-
-  ingress {
-    from_port       = 3306
-    to_port         = 3306
-    protocol        = "tcp"
-    security_groups = [aws_security_group.web.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name        = "${var.project_name}-db-sg-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
-  }
-}
-
-# Application Load Balancer
-resource "aws_lb" "final_project" {
-  name               = "${var.project_name}-alb-${random_id.final_project_id.hex}"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.web.id]
-  subnets            = aws_subnet.public[*].id
-
-  enable_deletion_protection = false
-
-  tags = {
-    Name        = "${var.project_name}-alb-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
-  }
-}
-
-# Target Group
-resource "aws_lb_target_group" "final_project" {
-  name     = "${var.project_name}-tg-${random_id.final_project_id.hex}"
-  port     = 8080
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.final_project.id
-
-  health_check {
-    enabled             = true
-    healthy_threshold   = 2
-    interval            = 30
-    matcher             = "200"
-    path                = "/health"
-    port                = "traffic-port"
-    protocol            = "HTTP"
-    timeout             = 5
-    unhealthy_threshold = 2
-  }
-
-  tags = {
-    Name        = "${var.project_name}-tg-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
-  }
-}
-
-# Launch Template
-resource "aws_launch_template" "final_project" {
-  name_prefix   = "${var.project_name}-lt-${random_id.final_project_id.hex}"
-  image_id      = data.aws_ami.amazon_linux.id
-  instance_type = var.instance_type
-
-  vpc_security_group_ids = [aws_security_group.web.id]
-
-  user_data = base64encode(templatefile("${path.module}/templates/user_data.sh", {
-    project_name = var.project_name
-    environment  = var.environment
-    final_project = true
-  }))
-
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      Name        = "${var.project_name}-instance-${random_id.final_project_id.hex}"
-      Environment = var.environment
-      Project     = var.project_name
-      Module      = "final-project"
+  
+  # Multi-region configuration
+  regions = {
+    primary = {
+      provider = "aws.primary"
+      region   = var.primary_region
+      priority = 1
+    }
+    secondary = {
+      provider = "aws.secondary"
+      region   = var.secondary_region
+      priority = 2
     }
   }
+}
 
-  tags = {
-    Name        = "${var.project_name}-lt-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
+# Enterprise VPC with advanced networking
+module "enterprise_networking" {
+  source = "./modules/enterprise-networking"
+  
+  for_each = local.regions
+  
+  providers = {
+    aws = each.value.provider
+  }
+  
+  name_prefix = "${local.name_prefix}-${each.key}"
+  region      = each.value.region
+  
+  # Advanced VPC configuration
+  vpc_cidr = var.vpc_cidrs[each.key]
+  
+  # Multi-AZ subnet configuration
+  availability_zones = var.availability_zones[each.key]
+  public_subnets     = var.public_subnets[each.key]
+  private_subnets    = var.private_subnets[each.key]
+  database_subnets   = var.database_subnets[each.key]
+  
+  # Enterprise networking features
+  enable_nat_gateway     = true
+  enable_vpn_gateway     = var.enable_vpn_gateway
+  enable_flow_logs       = true
+  enable_dns_hostnames   = true
+  enable_dns_support     = true
+  
+  # Security features
+  enable_network_acls = true
+  enable_default_security_group_rules = false
+  
+  tags = local.common_tags
+}
+
+# EKS Cluster for container orchestration
+module "eks_cluster" {
+  source = "./modules/eks-cluster"
+  
+  providers = {
+    aws = aws.primary
+  }
+  
+  cluster_name = "${local.name_prefix}-eks"
+  
+  # Cluster configuration
+  kubernetes_version = var.kubernetes_version
+  vpc_id            = module.enterprise_networking["primary"].vpc_id
+  subnet_ids        = module.enterprise_networking["primary"].private_subnets
+  
+  # Node group configuration
+  node_groups = {
+    system = {
+      instance_types = ["t3.medium"]
+      min_size      = 2
+      max_size      = 5
+      desired_size  = 3
+      capacity_type = "ON_DEMAND"
+      
+      labels = {
+        role = "system"
+      }
+      
+      taints = [
+        {
+          key    = "CriticalAddonsOnly"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        }
+      ]
+    }
+    
+    application = {
+      instance_types = ["t3.large", "t3.xlarge"]
+      min_size      = 3
+      max_size      = 20
+      desired_size  = 5
+      capacity_type = "SPOT"
+      
+      labels = {
+        role = "application"
+      }
+    }
+  }
+  
+  # Advanced cluster features
+  enable_irsa                    = true
+  enable_cluster_autoscaler      = true
+  enable_aws_load_balancer_controller = true
+  enable_external_dns            = true
+  enable_cert_manager            = true
+  
+  # Security configuration
+  cluster_endpoint_private_access = true
+  cluster_endpoint_public_access  = true
+  cluster_endpoint_public_access_cidrs = var.cluster_endpoint_public_access_cidrs
+  
+  # Logging
+  cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+  
+  tags = local.common_tags
+}
+
+# Configure Kubernetes and Helm providers
+data "aws_eks_cluster" "main" {
+  provider = aws.primary
+  name     = module.eks_cluster.cluster_name
+}
+
+data "aws_eks_cluster_auth" "main" {
+  provider = aws.primary
+  name     = module.eks_cluster.cluster_name
+}
+
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.main.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.main.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.main.token
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = data.aws_eks_cluster.main.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.main.certificate_authority[0].data)
+    token                  = data.aws_eks_cluster_auth.main.token
   }
 }
 
-# Auto Scaling Group
-resource "aws_autoscaling_group" "final_project" {
-  name                = "${var.project_name}-asg-${random_id.final_project_id.hex}"
-  vpc_zone_identifier = aws_subnet.private[*].id
-  target_group_arns   = [aws_lb_target_group.final_project.arn]
-  health_check_type   = "ELB"
-  health_check_grace_period = 300
-
-  min_size         = var.min_instances
-  max_size         = var.max_instances
-  desired_capacity = var.desired_instances
-
-  launch_template {
-    id      = aws_launch_template.final_project.id
-    version = "$Latest"
-  }
-
-  tag {
-    key                 = "Name"
-    value               = "${var.project_name}-asg-${random_id.final_project_id.hex}"
-    propagate_at_launch = true
-  }
-
-  tag {
-    key                 = "Environment"
-    value               = var.environment
-    propagate_at_launch = true
-  }
-
-  tag {
-    key                 = "Project"
-    value               = var.project_name
-    propagate_at_launch = true
-  }
+# Service Mesh with Istio
+module "service_mesh" {
+  source = "./modules/service-mesh"
+  
+  cluster_name = module.eks_cluster.cluster_name
+  
+  # Istio configuration
+  istio_version = var.istio_version
+  
+  # Service mesh features
+  enable_istio_ingress_gateway = true
+  enable_istio_egress_gateway  = true
+  enable_kiali                 = true
+  enable_jaeger               = true
+  enable_prometheus           = true
+  enable_grafana              = true
+  
+  # Security policies
+  enable_mtls = true
+  enable_authorization_policies = true
+  
+  tags = local.common_tags
+  
+  depends_on = [module.eks_cluster]
 }
 
-# ALB Listener
-resource "aws_lb_listener" "final_project" {
-  load_balancer_arn = aws_lb.final_project.arn
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.final_project.arn
-  }
+# Comprehensive monitoring and observability
+module "monitoring" {
+  source = "./modules/monitoring"
+  
+  cluster_name = module.eks_cluster.cluster_name
+  
+  # Monitoring stack
+  enable_prometheus_operator = true
+  enable_grafana             = true
+  enable_alertmanager        = true
+  enable_node_exporter       = true
+  enable_kube_state_metrics  = true
+  
+  # Logging stack
+  enable_fluentd    = true
+  enable_elasticsearch = true
+  enable_kibana     = true
+  
+  # Distributed tracing
+  enable_jaeger = true
+  
+  # Custom dashboards
+  grafana_dashboards = var.grafana_dashboards
+  
+  # Alert rules
+  prometheus_rules = var.prometheus_rules
+  
+  # Notification channels
+  alertmanager_config = var.alertmanager_config
+  
+  tags = local.common_tags
+  
+  depends_on = [module.eks_cluster]
 }
 
-# S3 Buckets
-resource "aws_s3_bucket" "final_project_data" {
-  bucket = "${var.project_name}-data-${random_id.final_project_id.hex}"
-
-  tags = {
-    Name        = "${var.project_name}-data-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
+# Database infrastructure with high availability
+module "database" {
+  source = "./modules/database"
+  
+  for_each = local.regions
+  
+  providers = {
+    aws = each.value.provider
   }
+  
+  name_prefix = "${local.name_prefix}-${each.key}"
+  
+  # Database configuration
+  vpc_id     = module.enterprise_networking[each.key].vpc_id
+  subnet_ids = module.enterprise_networking[each.key].database_subnets
+  
+  # Primary database configuration
+  databases = {
+    primary = {
+      engine               = var.database_config.engine
+      engine_version       = var.database_config.engine_version
+      instance_class       = var.database_config.instance_class
+      allocated_storage    = var.database_config.allocated_storage
+      max_allocated_storage = var.database_config.max_allocated_storage
+      
+      # High availability
+      multi_az                = each.key == "primary"
+      backup_retention_period = var.database_config.backup_retention_period
+      backup_window          = var.database_config.backup_window
+      maintenance_window     = var.database_config.maintenance_window
+      
+      # Security
+      storage_encrypted = true
+      kms_key_id       = module.security[each.key].kms_key_arn
+      
+      # Monitoring
+      monitoring_interval = 60
+      performance_insights_enabled = true
+      
+      # Read replicas
+      read_replicas = each.key == "primary" ? var.database_config.read_replicas : {}
+    }
+  }
+  
+  tags = local.common_tags
 }
 
-resource "aws_s3_bucket" "final_project_logs" {
-  bucket = "${var.project_name}-logs-${random_id.final_project_id.hex}"
-
-  tags = {
-    Name        = "${var.project_name}-logs-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
+# Comprehensive security implementation
+module "security" {
+  source = "./modules/security"
+  
+  for_each = local.regions
+  
+  providers = {
+    aws = each.value.provider
   }
+  
+  name_prefix = "${local.name_prefix}-${each.key}"
+  
+  # KMS configuration
+  create_kms_key = true
+  kms_key_description = "Enterprise KMS key for ${local.name_prefix} in ${each.value.region}"
+  
+  # Secrets management
+  secrets = var.secrets_config
+  
+  # Security services
+  enable_guardduty    = true
+  enable_security_hub = true
+  enable_config       = true
+  enable_cloudtrail   = true
+  enable_inspector    = true
+  
+  # WAF configuration
+  enable_waf = each.key == "primary"
+  waf_rules  = var.waf_rules
+  
+  # Network security
+  security_group_rules = var.security_group_rules
+  
+  tags = local.common_tags
 }
 
-# CloudWatch Log Group
-resource "aws_cloudwatch_log_group" "final_project" {
-  name              = "/aws/ec2/${var.project_name}-${random_id.final_project_id.hex}"
-  retention_in_days = 30
-
-  tags = {
-    Name        = "${var.project_name}-log-group-${random_id.final_project_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "final-project"
+# CI/CD pipeline integration
+module "cicd" {
+  source = "./modules/cicd"
+  
+  providers = {
+    aws = aws.primary
   }
+  
+  name_prefix = local.name_prefix
+  
+  # Repository configuration
+  repository_name = "${local.name_prefix}-repo"
+  
+  # Pipeline configuration
+  pipeline_stages = [
+    {
+      name = "Source"
+      actions = [
+        {
+          name     = "SourceAction"
+          category = "Source"
+          provider = "CodeCommit"
+          configuration = {
+            RepositoryName = "${local.name_prefix}-repo"
+            BranchName     = var.source_branch
+          }
+        }
+      ]
+    },
+    {
+      name = "Build"
+      actions = [
+        {
+          name     = "BuildAction"
+          category = "Build"
+          provider = "CodeBuild"
+          configuration = {
+            ProjectName = "${local.name_prefix}-build"
+          }
+        }
+      ]
+    },
+    {
+      name = "Deploy"
+      actions = [
+        {
+          name     = "DeployAction"
+          category = "Deploy"
+          provider = "EKS"
+          configuration = {
+            ClusterName = module.eks_cluster.cluster_name
+            ServiceName = "application"
+          }
+        }
+      ]
+    }
+  ]
+  
+  # Build configuration
+  build_projects = {
+    build = {
+      environment = {
+        compute_type = "BUILD_GENERAL1_MEDIUM"
+        image       = "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
+        type        = "LINUX_CONTAINER"
+      }
+      
+      source = {
+        type      = "CODEPIPELINE"
+        buildspec = "buildspec.yml"
+      }
+    }
+  }
+  
+  tags = local.common_tags
 }
 
-# Data source for AMI
-data "aws_ami" "amazon_linux" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+# Backup and disaster recovery
+module "backup" {
+  source = "./modules/backup"
+  
+  for_each = local.regions
+  
+  providers = {
+    aws = each.value.provider
   }
+  
+  name_prefix = "${local.name_prefix}-${each.key}"
+  
+  # Backup vault configuration
+  backup_vault_name = "${local.name_prefix}-${each.key}-vault"
+  kms_key_arn      = module.security[each.key].kms_key_arn
+  
+  # Backup plans
+  backup_plans = var.backup_plans
+  
+  # Resources to backup
+  backup_resources = {
+    rds_instances = [for db in module.database[each.key].database_arns : db]
+    ebs_volumes   = module.eks_cluster.ebs_volume_arns
+  }
+  
+  # Cross-region backup
+  enable_cross_region_backup = each.key == "primary"
+  destination_region        = each.key == "primary" ? var.secondary_region : var.primary_region
+  
+  tags = local.common_tags
+}
+
+# Cost management and optimization
+module "cost_management" {
+  source = "./modules/cost-management"
+  
+  providers = {
+    aws = aws.primary
+  }
+  
+  name_prefix = local.name_prefix
+  
+  # Budget configuration
+  budgets = var.budgets
+  
+  # Cost allocation tags
+  cost_allocation_tags = keys(local.common_tags)
+  
+  # Cost anomaly detection
+  enable_cost_anomaly_detection = true
+  cost_anomaly_threshold       = var.cost_anomaly_threshold
+  
+  # Savings plans and reserved instances
+  enable_savings_plans_recommendations = true
+  enable_ri_recommendations           = true
+  
+  tags = local.common_tags
+}
+
+# Application deployment
+module "applications" {
+  source = "./modules/applications"
+  
+  cluster_name = module.eks_cluster.cluster_name
+  
+  # Application configurations
+  applications = {
+    frontend = {
+      namespace = "frontend"
+      image     = var.application_images.frontend
+      replicas  = var.application_replicas.frontend
+      
+      service = {
+        type = "ClusterIP"
+        port = 80
+      }
+      
+      ingress = {
+        enabled = true
+        host    = var.frontend_domain
+        paths   = ["/"]
+      }
+      
+      resources = {
+        requests = {
+          cpu    = "100m"
+          memory = "128Mi"
+        }
+        limits = {
+          cpu    = "500m"
+          memory = "512Mi"
+        }
+      }
+    }
+    
+    backend = {
+      namespace = "backend"
+      image     = var.application_images.backend
+      replicas  = var.application_replicas.backend
+      
+      service = {
+        type = "ClusterIP"
+        port = 8080
+      }
+      
+      ingress = {
+        enabled = true
+        host    = var.backend_domain
+        paths   = ["/api"]
+      }
+      
+      resources = {
+        requests = {
+          cpu    = "200m"
+          memory = "256Mi"
+        }
+        limits = {
+          cpu    = "1000m"
+          memory = "1Gi"
+        }
+      }
+      
+      # Database connection
+      env = [
+        {
+          name  = "DATABASE_URL"
+          value = module.database["primary"].database_endpoints["primary"]
+        }
+      ]
+      
+      # Secrets
+      env_from = [
+        {
+          secret_ref = {
+            name = "database-credentials"
+          }
+        }
+      ]
+    }
+  }
+  
+  # Horizontal Pod Autoscaler
+  hpa_configs = {
+    frontend = {
+      min_replicas = 3
+      max_replicas = 20
+      target_cpu_utilization = 70
+    }
+    
+    backend = {
+      min_replicas = 5
+      max_replicas = 50
+      target_cpu_utilization = 70
+      target_memory_utilization = 80
+    }
+  }
+  
+  tags = local.common_tags
+  
+  depends_on = [
+    module.eks_cluster,
+    module.service_mesh,
+    module.monitoring
+  ]
+}
+
+# DNS and SSL certificate management
+module "dns" {
+  source = "./modules/dns"
+  
+  providers = {
+    aws = aws.primary
+  }
+  
+  domain_name = var.domain_name
+  
+  # Hosted zone configuration
+  create_hosted_zone = var.create_hosted_zone
+  
+  # DNS records
+  records = {
+    frontend = {
+      name = var.frontend_subdomain
+      type = "A"
+      alias = {
+        name                   = module.applications.ingress_dns_names["frontend"]
+        zone_id               = module.applications.ingress_zone_ids["frontend"]
+        evaluate_target_health = true
+      }
+    }
+    
+    backend = {
+      name = var.backend_subdomain
+      type = "A"
+      alias = {
+        name                   = module.applications.ingress_dns_names["backend"]
+        zone_id               = module.applications.ingress_zone_ids["backend"]
+        evaluate_target_health = true
+      }
+    }
+  }
+  
+  # SSL certificates
+  certificates = {
+    main = {
+      domain_name = var.domain_name
+      subject_alternative_names = [
+        "*.${var.domain_name}"
+      ]
+    }
+  }
+  
+  # Health checks
+  health_checks = var.health_checks
+  
+  tags = local.common_tags
+}
+
+# Compliance and governance
+module "compliance" {
+  source = "./modules/compliance"
+  
+  providers = {
+    aws = aws.primary
+  }
+  
+  name_prefix = local.name_prefix
+  
+  # Compliance framework
+  compliance_framework = var.compliance_framework
+  
+  # Config rules
+  config_rules = var.config_rules
+  
+  # Security standards
+  security_standards = var.security_standards
+  
+  # Audit configuration
+  enable_audit_logging = true
+  audit_log_retention = 2555  # 7 years
+  
+  # Compliance reporting
+  enable_compliance_reporting = true
+  compliance_report_frequency = "DAILY"
+  
+  tags = local.common_tags
 }

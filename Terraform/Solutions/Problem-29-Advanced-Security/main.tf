@@ -1,5 +1,5 @@
-# Problem 29: Advanced Security - Zero Trust and Compliance
-# This configuration demonstrates advanced security patterns
+# Problem 29: Advanced Security and Compliance
+# Comprehensive security patterns and compliance frameworks
 
 terraform {
   required_version = ">= 1.0"
@@ -8,10 +8,6 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.1"
-    }
   }
 }
 
@@ -19,249 +15,436 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Data sources
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
-# Generate security project ID
-resource "random_id" "security_id" {
-  byte_length = 6
-}
-
-# KMS Key for encryption
-resource "aws_kms_key" "security" {
-  description             = "Security encryption key for ${var.project_name}"
-  deletion_window_in_days = 7
-  enable_key_rotation     = true
-
-  tags = {
-    Name        = "${var.project_name}-security-key-${random_id.security_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "advanced-security"
-    Purpose     = "encryption"
-  }
-}
-
-resource "aws_kms_alias" "security" {
-  name          = "alias/${var.project_name}-security-${random_id.security_id.hex}"
-  target_key_id = aws_kms_key.security.key_id
-}
-
-# VPC with security-focused configuration
+# Security-focused VPC with advanced features
 resource "aws_vpc" "secure" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
 
   tags = {
-    Name        = "${var.project_name}-secure-vpc-${random_id.security_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "advanced-security"
-    Security    = "high"
+    Name           = "${var.project_name}-secure-vpc"
+    SecurityLevel  = "High"
+    Compliance     = var.compliance_framework
   }
 }
 
-# Private subnets only (zero-trust approach)
-resource "aws_subnet" "secure_private" {
-  count = 3
+# WAF Web ACL for application protection
+resource "aws_wafv2_web_acl" "main" {
+  name  = "${var.project_name}-web-acl"
+  scope = "REGIONAL"
 
-  vpc_id            = aws_vpc.secure.id
-  cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index)
-  availability_zone = data.aws_region.current.name
-
-  tags = {
-    Name        = "${var.project_name}-secure-private-subnet-${count.index + 1}-${random_id.security_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "advanced-security"
-    Type        = "private"
-    Security    = "high"
-  }
-}
-
-# NAT Gateway for secure outbound access
-resource "aws_eip" "nat" {
-  domain = "vpc"
-
-  tags = {
-    Name        = "${var.project_name}-nat-eip-${random_id.security_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "advanced-security"
-  }
-}
-
-resource "aws_nat_gateway" "secure" {
-  allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.secure_private[0].id
-
-  tags = {
-    Name        = "${var.project_name}-nat-gateway-${random_id.security_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "advanced-security"
-  }
-}
-
-# Security Groups with zero-trust principles
-resource "aws_security_group" "secure_web" {
-  name_prefix = "${var.project_name}-secure-web-sg-${random_id.security_id.hex}"
-  vpc_id      = aws_vpc.secure.id
-
-  # No inbound rules by default (zero-trust)
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+  default_action {
+    allow {}
   }
 
-  tags = {
-    Name        = "${var.project_name}-secure-web-sg-${random_id.security_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "advanced-security"
-    Type        = "web"
-    Security    = "high"
-  }
-}
+  # Rate limiting rule
+  rule {
+    name     = "RateLimitRule"
+    priority = 1
 
-resource "aws_security_group" "secure_database" {
-  name_prefix = "${var.project_name}-secure-db-sg-${random_id.security_id.hex}"
-  vpc_id      = aws_vpc.secure.id
+    override_action {
+      none {}
+    }
 
-  # Only allow access from web security group
-  ingress {
-    from_port       = 3306
-    to_port         = 3306
-    protocol        = "tcp"
-    security_groups = [aws_security_group.secure_web.id]
-  }
+    statement {
+      rate_based_statement {
+        limit              = var.rate_limit
+        aggregate_key_type = "IP"
+      }
+    }
 
-  ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.secure_web.id]
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "RateLimitRule"
+      sampled_requests_enabled   = true
+    }
+
+    action {
+      block {}
+    }
   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+  # AWS Managed Rules
+  rule {
+    name     = "AWSManagedRulesCommonRuleSet"
+    priority = 2
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "CommonRuleSetMetric"
+      sampled_requests_enabled   = true
+    }
   }
 
   tags = {
-    Name        = "${var.project_name}-secure-db-sg-${random_id.security_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "advanced-security"
-    Type        = "database"
-    Security    = "high"
+    Name = "${var.project_name}-web-acl"
   }
 }
 
-# Encrypted S3 bucket for secure data storage
-resource "aws_s3_bucket" "secure_data" {
-  bucket = "${var.project_name}-secure-data-${random_id.security_id.hex}"
+# GuardDuty for threat detection
+resource "aws_guardduty_detector" "main" {
+  enable = true
+
+  datasources {
+    s3_logs {
+      enable = true
+    }
+    kubernetes {
+      audit_logs {
+        enable = true
+      }
+    }
+    malware_protection {
+      scan_ec2_instance_with_findings {
+        ebs_volumes {
+          enable = true
+        }
+      }
+    }
+  }
 
   tags = {
-    Name        = "${var.project_name}-secure-data-${random_id.security_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "advanced-security"
-    Purpose     = "secure-data"
-    Security    = "high"
+    Name = "${var.project_name}-guardduty"
   }
 }
 
-# Enable encryption on S3 bucket
-resource "aws_s3_bucket_server_side_encryption_configuration" "secure_data" {
-  bucket = aws_s3_bucket.secure_data.id
+# Security Hub for centralized security findings
+resource "aws_securityhub_account" "main" {
+  enable_default_standards = true
+}
+
+# Config for compliance monitoring
+resource "aws_config_configuration_recorder" "main" {
+  name     = "${var.project_name}-config-recorder"
+  role_arn = aws_iam_role.config.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "main" {
+  name           = "${var.project_name}-config-delivery-channel"
+  s3_bucket_name = aws_s3_bucket.config.bucket
+}
+
+# KMS keys for encryption
+resource "aws_kms_key" "main" {
+  description             = "KMS key for ${var.project_name}"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "Enable IAM User Permissions"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = {
+    Name = "${var.project_name}-kms-key"
+  }
+}
+
+resource "aws_kms_alias" "main" {
+  name          = "alias/${var.project_name}-key"
+  target_key_id = aws_kms_key.main.key_id
+}
+
+data "aws_caller_identity" "current" {}
+
+# Secrets Manager for sensitive data
+resource "aws_secretsmanager_secret" "db_credentials" {
+  name                    = "${var.project_name}/db/credentials"
+  description             = "Database credentials for ${var.project_name}"
+  kms_key_id             = aws_kms_key.main.arn
+  recovery_window_in_days = 7
+
+  tags = {
+    Name = "${var.project_name}-db-credentials"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "db_credentials" {
+  secret_id = aws_secretsmanager_secret.db_credentials.id
+  secret_string = jsonencode({
+    username = var.db_username
+    password = random_password.db_password.result
+  })
+}
+
+resource "random_password" "db_password" {
+  length  = 32
+  special = true
+}
+
+# S3 bucket for Config and CloudTrail
+resource "aws_s3_bucket" "config" {
+  bucket = "${var.project_name}-config-${random_id.bucket_suffix.hex}"
+
+  tags = {
+    Name = "${var.project_name}-config-bucket"
+  }
+}
+
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "config" {
+  bucket = aws_s3_bucket.config.id
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.security.arn
       sse_algorithm     = "aws:kms"
+      kms_master_key_id = aws_kms_key.main.arn
     }
   }
 }
 
-# Block all public access
-resource "aws_s3_bucket_public_access_block" "secure_data" {
-  bucket = aws_s3_bucket.secure_data.id
+# IAM role for Config
+resource "aws_iam_role" "config" {
+  name = "${var.project_name}-config-role"
 
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "config.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "config" {
+  role       = aws_iam_role.config.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/ConfigRole"
 }
 
 # CloudTrail for audit logging
-resource "aws_cloudtrail" "security_audit" {
-  name                          = "${var.project_name}-security-audit-${random_id.security_id.hex}"
-  s3_bucket_name                = aws_s3_bucket.secure_data.id
+resource "aws_cloudtrail" "main" {
+  name           = "${var.project_name}-cloudtrail"
+  s3_bucket_name = aws_s3_bucket.config.bucket
+  s3_key_prefix  = "cloudtrail"
+
   include_global_service_events = true
-  is_multi_region_trail         = true
-  enable_logging                = true
+  is_multi_region_trail        = true
+  enable_logging               = true
+  kms_key_id                   = aws_kms_key.main.arn
+
+  event_selector {
+    read_write_type                 = "All"
+    include_management_events       = true
+    exclude_management_event_sources = []
+
+    data_resource {
+      type   = "AWS::S3::Object"
+      values = ["arn:aws:s3:::*/*"]
+    }
+  }
 
   tags = {
-    Name        = "${var.project_name}-security-audit-${random_id.security_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "advanced-security"
-    Purpose     = "audit-logging"
+    Name = "${var.project_name}-cloudtrail"
   }
 }
 
-# CloudWatch Log Group for security monitoring
+# Network ACLs for additional security
+resource "aws_network_acl" "secure" {
+  vpc_id = aws_vpc.secure.id
+
+  # Allow HTTP/HTTPS inbound
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 80
+    to_port    = 80
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 110
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
+  }
+
+  # Allow return traffic
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 120
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
+  }
+
+  # Allow all outbound
+  egress {
+    protocol   = "-1"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  tags = {
+    Name = "${var.project_name}-secure-nacl"
+  }
+}
+
+# Security groups with least privilege
+resource "aws_security_group" "web" {
+  name        = "${var.project_name}-web-sg"
+  description = "Security group for web tier"
+  vpc_id      = aws_vpc.secure.id
+
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-web-sg"
+  }
+}
+
+# Inspector for vulnerability assessment
+resource "aws_inspector_assessment_target" "main" {
+  name = "${var.project_name}-assessment-target"
+}
+
+resource "aws_inspector_assessment_template" "main" {
+  name       = "${var.project_name}-assessment-template"
+  target_arn = aws_inspector_assessment_target.main.arn
+  duration   = 3600
+
+  rules_package_arns = [
+    "arn:aws:inspector:${var.aws_region}:316112463485:rulespackage/0-R01qwB5Q", # Security Best Practices
+    "arn:aws:inspector:${var.aws_region}:316112463485:rulespackage/0-gEjTy7T7", # Network Reachability
+    "arn:aws:inspector:${var.aws_region}:316112463485:rulespackage/0-rExsr2X8", # Runtime Behavior Analysis
+  ]
+
+  tags = {
+    Name = "${var.project_name}-assessment-template"
+  }
+}
+
+# Systems Manager for patch management
+resource "aws_ssm_maintenance_window" "main" {
+  name     = "${var.project_name}-maintenance-window"
+  schedule = "cron(0 2 ? * SUN *)"
+  duration = 3
+  cutoff   = 1
+
+  tags = {
+    Name = "${var.project_name}-maintenance-window"
+  }
+}
+
+resource "aws_ssm_maintenance_window_target" "main" {
+  window_id     = aws_ssm_maintenance_window.main.id
+  name          = "${var.project_name}-maintenance-target"
+  description   = "Maintenance target for ${var.project_name}"
+  resource_type = "INSTANCE"
+
+  targets {
+    key    = "tag:Project"
+    values = [var.project_name]
+  }
+}
+
+resource "aws_ssm_maintenance_window_task" "main" {
+  max_concurrency = "2"
+  max_errors      = "1"
+  priority        = 1
+  task_arn        = "AWS-RunPatchBaseline"
+  task_type       = "RUN_COMMAND"
+  window_id       = aws_ssm_maintenance_window.main.id
+
+  targets {
+    key    = "WindowTargetIds"
+    values = [aws_ssm_maintenance_window_target.main.id]
+  }
+
+  task_invocation_parameters {
+    run_command_parameters {
+      name = "Operation"
+      values = ["Install"]
+    }
+  }
+}
+
+# CloudWatch for security monitoring
 resource "aws_cloudwatch_log_group" "security" {
-  name              = "/aws/security/${var.project_name}-${random_id.security_id.hex}"
+  name              = "/aws/security/${var.project_name}"
   retention_in_days = 90
-  kms_key_id        = aws_kms_key.security.arn
+  kms_key_id        = aws_kms_key.main.arn
 
   tags = {
-    Name        = "${var.project_name}-security-log-group-${random_id.security_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "advanced-security"
-    Purpose     = "security-monitoring"
+    Name = "${var.project_name}-security-logs"
   }
 }
 
-# Security monitoring EC2 instance
-resource "aws_instance" "security_monitor" {
-  ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = var.instance_type
-  subnet_id              = aws_subnet.secure_private[0].id
-  vpc_security_group_ids = [aws_security_group.secure_web.id]
-
-  user_data = templatefile("${path.module}/templates/user_data.sh", {
-    project_name = var.project_name
-    environment  = var.environment
-    security_enabled = true
-  })
+# SNS for security alerts
+resource "aws_sns_topic" "security_alerts" {
+  name       = "${var.project_name}-security-alerts"
+  kms_master_key_id = aws_kms_key.main.arn
 
   tags = {
-    Name        = "${var.project_name}-security-monitor-${random_id.security_id.hex}"
-    Environment = var.environment
-    Project     = var.project_name
-    Module      = "advanced-security"
-    Purpose     = "security-monitoring"
-    Security    = "high"
+    Name = "${var.project_name}-security-alerts"
   }
 }
 
-# Data source for AMI
-data "aws_ami" "amazon_linux" {
-  most_recent = true
-  owners      = ["amazon"]
+resource "aws_sns_topic_subscription" "security_email" {
+  count = var.security_email != null ? 1 : 0
 
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
-  }
+  topic_arn = aws_sns_topic.security_alerts.arn
+  protocol  = "email"
+  endpoint  = var.security_email
 }

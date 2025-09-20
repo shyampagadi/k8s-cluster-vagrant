@@ -1,0 +1,6 @@
+aws_region         = "us-west-2"
+cluster_name       = "my-eks-cluster"
+enable_argocd      = true
+enable_flux        = false
+enable_monitoring  = true
+git_repository_url = "https://github.com/example/demo-app"

@@ -1,0 +1,25 @@
+# Problem 35: Kubernetes Fundamentals
+# Example variable values
+
+cluster_name    = "my-eks-cluster"
+aws_region      = "us-west-2"
+namespace_name  = "microservices"
+
+app_version    = "1.0.0"
+replica_count  = 3
+
+web_app_cpu_request    = "100m"
+web_app_memory_request = "128Mi"
+web_app_cpu_limit      = "500m"
+web_app_memory_limit   = "512Mi"
+
+api_app_cpu_request    = "200m"
+api_app_memory_request = "256Mi"
+api_app_cpu_limit      = "1000m"
+api_app_memory_limit   = "1Gi"
+
+database_storage_size = "20Gi"
+database_storage_class = "gp2"
+
+enable_monitoring = true
+enable_logging    = true

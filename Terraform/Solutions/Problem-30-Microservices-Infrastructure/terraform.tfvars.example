@@ -1,0 +1,21 @@
+# Problem 30: Microservices Infrastructure with EKS
+# Example variable values
+
+cluster_name = "my-eks-cluster"
+aws_region   = "us-west-2"
+vpc_cidr     = "10.0.0.0/16"
+
+node_instance_types    = ["t3.medium", "t3.large"]
+node_desired_capacity  = 3
+node_max_capacity     = 10
+node_min_capacity     = 1
+
+enable_istio      = true
+enable_monitoring = true
+enable_logging    = true
+
+tags = {
+  Environment = "development"
+  Project     = "microservices-demo"
+  Owner       = "devops-team"
+}

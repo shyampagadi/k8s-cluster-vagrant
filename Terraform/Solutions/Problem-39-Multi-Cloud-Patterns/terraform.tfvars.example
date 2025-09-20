@@ -1,0 +1,12 @@
+aws_region     = "us-west-2"
+azure_location = "East US"
+project_name   = "multi-cloud-demo"
+environment    = "dev"
+
+aws_vpc_cidr   = "10.0.0.0/16"
+azure_vnet_cidr = "10.1.0.0/16"
+
+aws_availability_zones = ["us-west-2a", "us-west-2b"]
+azure_subnet_cidrs     = ["10.1.1.0/24", "10.1.2.0/24"]
+
+enable_cross_cloud_connectivity = false
