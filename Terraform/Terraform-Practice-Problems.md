@@ -4266,3 +4266,297 @@ Your organization's infrastructure management process is manual, error-prone, an
 ---
 
 *This comprehensive learning plan is designed to take you from a complete beginner to a Terraform expert capable of designing and implementing production-grade infrastructure solutions. Each problem builds upon previous knowledge while introducing new concepts and best practices. The journey from zero to hero requires dedication, practice, and continuous learning, but the skills you'll develop will be invaluable in your DevOps and infrastructure career.*
+
+---
+
+### Problem 35: Kubernetes Fundamentals
+**Difficulty**: Expert  
+**Estimated Time**: 180 minutes  
+**Learning Objectives**: Kubernetes, EKS, container orchestration, service mesh
+
+**Scenario**: 
+Your organization is transitioning from traditional VM-based infrastructure to containerized applications using Kubernetes. As the platform engineer, you need to design and implement a production-ready Kubernetes cluster using AWS EKS with proper networking, security, and observability. This includes setting up worker nodes, configuring networking, implementing security policies, and preparing for application deployments.
+
+**Requirements**:
+
+1. **Deploy production EKS cluster**
+   - Create EKS cluster with proper configuration
+   - Configure worker node groups with different instance types
+   - Set up cluster networking and security groups
+   - Implement cluster autoscaling and node management
+
+2. **Configure Kubernetes networking**
+   - Set up VPC CNI for pod networking
+   - Configure ingress controllers and load balancers
+   - Implement network policies for security
+   - Set up service mesh for advanced traffic management
+
+3. **Implement security and RBAC**
+   - Configure Kubernetes RBAC policies
+   - Set up pod security policies and contexts
+   - Implement secrets management integration
+   - Configure audit logging and monitoring
+
+4. **Set up observability and monitoring**
+   - Deploy monitoring stack (Prometheus, Grafana)
+   - Configure logging aggregation
+   - Set up distributed tracing
+   - Implement alerting and notification systems
+
+**Expected Deliverables**:
+- Production-ready EKS cluster
+- Kubernetes networking configuration
+- Security policies and RBAC setup
+- Monitoring and observability stack
+- Documentation and operational runbooks
+
+**Knowledge Check**:
+- How do you design production Kubernetes clusters?
+- What are Kubernetes security best practices?
+- How do you implement monitoring for Kubernetes?
+- How do you manage Kubernetes networking?
+
+---
+
+### Problem 36: Production Deployment Strategies
+**Difficulty**: Expert  
+**Estimated Time**: 200 minutes  
+**Learning Objectives**: Blue-green deployments, canary releases, progressive delivery
+
+**Scenario**: 
+Your organization needs to implement sophisticated deployment strategies for production applications that minimize downtime and reduce deployment risks. As the deployment architect, you need to design and implement blue-green deployments, canary releases, and progressive delivery patterns using Terraform and Kubernetes. This includes setting up automated deployment pipelines, implementing traffic management, and ensuring rapid rollback capabilities.
+
+**Requirements**:
+
+1. **Implement blue-green deployment strategy**
+   - Set up blue-green infrastructure with Terraform
+   - Configure traffic switching mechanisms
+   - Implement automated health checks and validation
+   - Set up rollback procedures for failed deployments
+
+2. **Configure canary release patterns**
+   - Implement canary deployment infrastructure
+   - Set up traffic splitting and gradual rollout
+   - Configure automated metrics collection and analysis
+   - Implement automated rollback based on metrics
+
+3. **Set up progressive delivery**
+   - Configure feature flags and traffic management
+   - Implement A/B testing infrastructure
+   - Set up automated promotion and rollback
+   - Configure monitoring and alerting for deployments
+
+4. **Implement deployment automation**
+   - Create CI/CD pipelines for deployment strategies
+   - Set up automated testing and validation
+   - Configure approval workflows for production
+   - Implement deployment monitoring and observability
+
+**Expected Deliverables**:
+- Blue-green deployment infrastructure
+- Canary release configuration
+- Progressive delivery setup
+- Automated deployment pipelines
+- Monitoring and rollback mechanisms
+
+**Knowledge Check**:
+- How do you implement blue-green deployments?
+- What are the benefits of canary releases?
+- How do you implement progressive delivery?
+- How do you automate deployment strategies?
+
+---
+
+### Problem 37: Infrastructure Testing
+**Difficulty**: Expert  
+**Estimated Time**: 220 minutes  
+**Learning Objectives**: Terratest, policy testing, compliance validation
+
+**Scenario**: 
+Your organization needs to implement comprehensive testing for infrastructure code to ensure reliability, security, and compliance. As the testing architect, you need to design and implement a complete testing strategy using Terratest, policy validation, and compliance checking. This includes unit tests, integration tests, security tests, and compliance validation for all infrastructure components.
+
+**Requirements**:
+
+1. **Implement Terratest for infrastructure testing**
+   - Set up Terratest framework and test structure
+   - Create unit tests for Terraform modules
+   - Implement integration tests for complete stacks
+   - Set up automated test execution and reporting
+
+2. **Configure policy and compliance testing**
+   - Implement Open Policy Agent (OPA) for policy validation
+   - Set up security scanning and vulnerability testing
+   - Configure compliance checking for industry standards
+   - Implement automated policy enforcement
+
+3. **Set up performance and load testing**
+   - Configure infrastructure performance testing
+   - Implement load testing for deployed applications
+   - Set up capacity planning and scaling tests
+   - Configure performance monitoring and alerting
+
+4. **Implement test automation and CI/CD**
+   - Create automated testing pipelines
+   - Set up test environments and data management
+   - Configure test reporting and notifications
+   - Implement test-driven infrastructure development
+
+**Expected Deliverables**:
+- Terratest framework and test suites
+- Policy validation and compliance testing
+- Performance and load testing setup
+- Automated testing pipelines
+- Test reporting and documentation
+
+**Knowledge Check**:
+- How do you implement infrastructure testing?
+- What are policy validation best practices?
+- How do you test infrastructure performance?
+- How do you automate infrastructure testing?
+
+---
+
+### Problem 38: Policy as Code
+**Difficulty**: Expert  
+**Estimated Time**: 180 minutes  
+**Learning Objectives**: OPA, Sentinel, policy enforcement, compliance automation
+
+**Scenario**: 
+Your organization needs to implement policy as code to ensure consistent governance, security, and compliance across all infrastructure deployments. As the governance architect, you need to design and implement comprehensive policy frameworks using Open Policy Agent (OPA) and other policy engines. This includes creating security policies, compliance rules, cost controls, and automated enforcement mechanisms.
+
+**Requirements**:
+
+1. **Implement Open Policy Agent (OPA) policies**
+   - Set up OPA framework and policy structure
+   - Create security policies for infrastructure resources
+   - Implement compliance policies for regulatory requirements
+   - Set up policy testing and validation
+
+2. **Configure policy enforcement mechanisms**
+   - Set up admission controllers for Kubernetes
+   - Configure Terraform policy validation
+   - Implement CI/CD pipeline policy checks
+   - Set up automated policy violation reporting
+
+3. **Create governance and compliance policies**
+   - Implement cost control and budget policies
+   - Set up resource tagging and naming policies
+   - Configure security and access control policies
+   - Implement data protection and privacy policies
+
+4. **Set up policy monitoring and reporting**
+   - Configure policy violation monitoring
+   - Set up compliance reporting and dashboards
+   - Implement policy audit trails and logging
+   - Configure alerting for policy violations
+
+**Expected Deliverables**:
+- OPA policy framework and policies
+- Policy enforcement mechanisms
+- Governance and compliance policies
+- Policy monitoring and reporting system
+- Documentation and policy guidelines
+
+**Knowledge Check**:
+- How do you implement policy as code?
+- What are OPA best practices?
+- How do you enforce policies in CI/CD?
+- How do you monitor policy compliance?
+
+---
+
+### Problem 39: Multi-Cloud Patterns
+**Difficulty**: Expert  
+**Estimated Time**: 240 minutes  
+**Learning Objectives**: Multi-cloud architecture, cloud-agnostic patterns, cross-cloud networking
+
+**Scenario**: 
+Your organization wants to implement a multi-cloud strategy to avoid vendor lock-in, optimize costs, and leverage best-of-breed services from different cloud providers. As the multi-cloud architect, you need to design and implement cloud-agnostic infrastructure patterns that work across AWS, Azure, and Google Cloud. This includes cross-cloud networking, unified identity management, and consistent deployment patterns.
+
+**Requirements**:
+
+1. **Design cloud-agnostic infrastructure patterns**
+   - Create reusable modules for multiple cloud providers
+   - Implement consistent networking across clouds
+   - Set up unified identity and access management
+   - Configure cross-cloud resource dependencies
+
+2. **Implement cross-cloud networking**
+   - Set up VPN connections between cloud providers
+   - Configure cross-cloud load balancing
+   - Implement unified DNS and service discovery
+   - Set up cross-cloud data replication
+
+3. **Configure unified monitoring and management**
+   - Set up centralized monitoring across clouds
+   - Implement unified logging and alerting
+   - Configure cross-cloud cost management
+   - Set up unified security and compliance monitoring
+
+4. **Implement multi-cloud deployment strategies**
+   - Create deployment pipelines for multiple clouds
+   - Set up disaster recovery across cloud providers
+   - Implement workload distribution and failover
+   - Configure automated scaling across clouds
+
+**Expected Deliverables**:
+- Cloud-agnostic infrastructure modules
+- Cross-cloud networking configuration
+- Unified monitoring and management setup
+- Multi-cloud deployment pipelines
+- Documentation and operational procedures
+
+**Knowledge Check**:
+- How do you design cloud-agnostic infrastructure?
+- What are multi-cloud networking patterns?
+- How do you manage identity across clouds?
+- How do you implement multi-cloud monitoring?
+
+---
+
+### Problem 40: GitOps Advanced
+**Difficulty**: Expert  
+**Estimated Time**: 260 minutes  
+**Learning Objectives**: Advanced GitOps, ArgoCD, Flux, progressive delivery, multi-cluster management
+
+**Scenario**: 
+Your organization needs to implement advanced GitOps practices for managing complex, multi-cluster Kubernetes environments with sophisticated deployment strategies. As the GitOps architect, you need to design and implement enterprise-grade GitOps workflows using ArgoCD and Flux with multi-cluster management, progressive delivery, and comprehensive security. This includes setting up multi-tenant GitOps, implementing advanced deployment patterns, and ensuring security and compliance.
+
+**Requirements**:
+
+1. **Implement advanced ArgoCD configuration**
+   - Set up multi-cluster ArgoCD deployment
+   - Configure advanced RBAC and security policies
+   - Implement application sets and generators
+   - Set up advanced sync policies and hooks
+
+2. **Configure progressive delivery with Argo Rollouts**
+   - Implement canary and blue-green deployments
+   - Set up automated analysis and rollback
+   - Configure traffic management and splitting
+   - Implement feature flags and experimentation
+
+3. **Set up multi-tenant GitOps architecture**
+   - Configure tenant isolation and security
+   - Implement per-tenant GitOps workflows
+   - Set up resource quotas and policies
+   - Configure tenant-specific monitoring and alerting
+
+4. **Implement GitOps security and compliance**
+   - Set up signed commits and policy enforcement
+   - Configure secret management and rotation
+   - Implement audit logging and compliance reporting
+   - Set up vulnerability scanning and remediation
+
+**Expected Deliverables**:
+- Advanced ArgoCD multi-cluster setup
+- Progressive delivery configuration
+- Multi-tenant GitOps architecture
+- Security and compliance framework
+- Comprehensive documentation and runbooks
+
+**Knowledge Check**:
+- How do you implement advanced GitOps patterns?
+- What are multi-cluster management strategies?
+- How do you implement progressive delivery?
+- How do you secure GitOps workflows?
